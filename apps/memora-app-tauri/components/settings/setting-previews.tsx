@@ -206,14 +206,13 @@ export function PowerModePreview({
   );
 }
 
-// â”€â”€ AI audio & video analysis (confidential enclave) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-// Two lanes â€” speechâ†’transcript and framesâ†’description â€” converging on a
-// single attested enclave, so the otherwise-abstract toggle shows what it
-// actually unlocks: audio becomes text, video & images become descriptions,
-// both processed in confidential compute before reaching the agent. Pure
-// illustration (grayscale, sharp); motion is decorative (dancing waveform,
-// flowing dots, pulsing enclave) and respects prefers-reduced-motion via the
-// shared keyframes in globals.css.
+// â”€â”€ AI video & image analysis (confidential enclave) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// A framesâ†’description lane converging on a single attested enclave, so the
+// otherwise-abstract toggle shows what it actually unlocks: video & images
+// become descriptions, processed in confidential compute before reaching the
+// agent. Pure illustration (grayscale, sharp); motion is decorative (flowing
+// dots, pulsing enclave) and respects prefers-reduced-motion via the shared
+// keyframes in globals.css.
 
 // A connector with a dot traveling along it â€” reads as data flowing toward
 // (or out of) the enclave. Both input and output tracks flow leftâ†’right.
@@ -261,52 +260,13 @@ function ResultLine({ text, tag }: { text: string; tag: string }) {
 }
 
 export function CloudMediaAnalysisPreview() {
-  // Waveform sticks: each gets its own duration + negative delay so the wave
-  // never synchronizes (same trick as the meeting "listening" bars).
-  const bars = [0.5, 0.9, 0.35, 0.8, 0.55, 1, 0.45];
   return (
     <div
       className="mt-2.5 rounded-md border border-border bg-muted/40 px-2.5 py-2.5"
       data-testid="cloud-media-analysis-preview"
     >
       <div className="grid grid-cols-[auto_auto_1fr] items-center gap-x-1 gap-y-2.5">
-        {/* lane 1 â€” audio â†’ transcript */}
-        <span className="flex items-center">
-          <SourceTile label="audio">
-            <span className="flex h-4 items-end gap-[2px]">
-              {bars.map((h, i) => (
-                <span
-                  key={i}
-                  className="meeting-listening-stick w-[2px] rounded-[1px] bg-foreground"
-                  style={{
-                    height: `${Math.round(h * 16)}px`,
-                    animationDuration: `${0.9 + (i % 3) * 0.25}s`,
-                    animationDelay: `-${(i * 0.17).toFixed(2)}s`,
-                  }}
-                />
-              ))}
-            </span>
-          </SourceTile>
-          <FlowTrack />
-        </span>
-
-        {/* enclave â€” centered between both lanes, padlock drawn in pure geometry */}
-        <span className="row-span-2 flex flex-col items-center gap-1 self-center px-0.5">
-          <span className="relative flex h-9 w-9 items-center justify-center rounded-[3px] border border-foreground bg-background">
-            <span className="flex flex-col items-center">
-              <span className="h-2 w-3 rounded-t-full border border-b-0 border-foreground" />
-              <span className="h-2.5 w-3.5 bg-foreground" />
-            </span>
-            <span className="absolute inset-0 animate-pulse rounded-[3px] border border-foreground/30" />
-          </span>
-          <span className="text-[9px] uppercase tracking-wider text-muted-foreground">
-            enclave
-          </span>
-        </span>
-
-        <ResultLine text={"â€œâ€¦then we shipped the fix.â€"} tag="transcript" />
-
-        {/* lane 2 â€” video & images â†’ description */}
+        {/* video & images -> description */}
         <span className="flex items-center">
           <SourceTile label="video Â· images">
             <span className="grid grid-cols-3 gap-[2px]">
@@ -321,14 +281,26 @@ export function CloudMediaAnalysisPreview() {
           </SourceTile>
           <FlowTrack />
         </span>
+        {/* enclave */}
+        <span className="flex flex-col items-center gap-1 self-center px-0.5">
+          <span className="relative flex h-9 w-9 items-center justify-center rounded-[3px] border border-foreground bg-background">
+            <span className="flex flex-col items-center">
+              <span className="h-2 w-3 rounded-t-full border border-b-0 border-foreground" />
+              <span className="h-2.5 w-3.5 bg-foreground" />
+            </span>
+            <span className="absolute inset-0 animate-pulse rounded-[3px] border border-foreground/30" />
+          </span>
+          <span className="text-[9px] uppercase tracking-wider text-muted-foreground">
+            enclave
+          </span>
+        </span>
 
         <ResultLine text="dashboard open, chart trending up" tag="from video" />
       </div>
 
       <p className="mt-2 text-[10px] text-muted-foreground">
-        speech becomes searchable text and video &amp; images become
-        descriptions â€” processed in a confidential enclave, then available to
-        Pi &amp; Claude Code.
+        video &amp; images become descriptions â€” processed in a confidential
+        enclave, then available to Pi &amp; Claude Code.
       </p>
     </div>
   );

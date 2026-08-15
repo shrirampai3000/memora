@@ -17,17 +17,14 @@ import type { SettingsField } from "./settings-search";
 export const searchIndex: SettingsField[] = [
   { label: "Enhanced AI", keywords: ["cloud", "suggestions", "daily summary", "timeline"] },
   {
-    label: "AI audio & video analysis",
+    label: "AI video & image analysis",
     keywords: [
-      "transcription",
-      "transcribe",
       "video",
       "image",
       "enclave",
       "confidential",
       "media",
       "vision",
-      "audio",
     ],
   },
   { label: "Auto-generate chat titles", keywords: ["chat", "tokens"] },
@@ -131,11 +128,11 @@ export function AISettings() {
               <Lock className="h-4 w-4 text-muted-foreground shrink-0" />
               <div>
                 <h3 className="text-sm font-medium text-foreground flex items-center gap-1.5">
-                  AI audio &amp; video analysis
-                  <HelpTooltip text="Lets Pi and Claude Code call memora's confidential enclave (Gemma 4 E4B inside a Tinfoil-attested AMD SEV-SNP container, encrypted in flight + at rest, no plaintext at the provider) to transcribe meetings, describe video clips, and analyze image frames from your memora data. When off, the capability is stripped from the agent skill markdown so Pi won't try to use it." />
+                  AI video &amp; image analysis
+                  <HelpTooltip text="Lets Pi and Claude Code call memora's confidential enclave (Gemma 4 E4B inside a Tinfoil-attested AMD SEV-SNP container, encrypted in flight + at rest, no plaintext at the provider) to describe video clips and analyze image frames from your memora data. When off, the capability is stripped from the agent skill markdown so Pi won't try to use it." />
                 </h3>
                 <p className="text-xs text-muted-foreground">
-                  Transcribe audio and understand video &amp; images in a confidential enclave.
+                  Understand video &amp; images in a confidential enclave.
                 </p>
               </div>
             </div>
