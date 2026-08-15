@@ -1,8 +1,8 @@
-# Vision Pipeline v2 — Architecture Spec
+﻿# Vision Pipeline v2 â€” Architecture Spec
 
-<!-- doc-covers: crates/screenpipe-screen, crates/screenpipe-capture -->
+<!-- doc-covers: crates/MEMORA-screen, crates/MEMORA-capture -->
 <!-- doc-verified: a35930c27 -->
-> **Historical.** Last verified against a35930c27 (2026-02-13). `crates/screenpipe-screen`, `crates/screenpipe-capture` has moved a long way
+> **Historical.** Last verified against a35930c27 (2026-02-13). `crates/MEMORA-screen`, `crates/MEMORA-capture` has moved a long way
 > since; read this for original intent only. Names, signatures, and thresholds are
 > probably wrong. The code wins. Run `bun scripts/check-doc-freshness.ts` for current drift.
 
@@ -14,26 +14,26 @@
 
 ### 1.1 The Promise
 
-Screenpipe promises: "AI that knows everything you've seen, said, or heard." Users expect that anything they saw on screen is searchable later. Missing data = broken product.
+MEMORA promises: "AI that knows everything you've seen, said, or heard." Users expect that anything they saw on screen is searchable later. Missing data = broken product.
 
 ### 1.2 What's Broken Today (v2.0.440)
 
-**Bug 1: Pipeline stalls after ~30 seconds.** The capture loop processes 12-13 frames, then stops producing new frames entirely. The heartbeat keeps ticking (iterations 100→6000+) but `frames_processed` freezes. The user browses 3 websites — none captured.
+**Bug 1: Pipeline stalls after ~30 seconds.** The capture loop processes 12-13 frames, then stops producing new frames entirely. The heartbeat keeps ticking (iterations 100â†’6000+) but `frames_processed` freezes. The user browses 3 websites â€” none captured.
 
-Root cause: OCR runs synchronously inside the capture loop. `process_max_average_frame()` calls `perform_ocr_apple()` for every visible window, blocking the entire capture cycle for 2-5 seconds per frame. After a burst of initial frames, the hash-based frame comparison (at 320×180 downscale) starts returning false matches, and all subsequent frames are skipped.
+Root cause: OCR runs synchronously inside the capture loop. `process_max_average_frame()` calls `perform_ocr_apple()` for every visible window, blocking the entire capture cycle for 2-5 seconds per frame. After a burst of initial frames, the hash-based frame comparison (at 320Ã—180 downscale) starts returning false matches, and all subsequent frames are skipped.
 
 **Bug 2: Silent frame drops.** Out of 38 frames "processed" by the capture loop, only 4 reached the database. The `frame_write_tracker` race condition drops frames that pass OCR but haven't been written to video yet. The DB writer waits 100ms, doesn't find the frame in the tracker, and silently `continue`s.
 
 **Bug 3: Health endpoint lies.** Reports `frame_status: ok` with `last_frame_timestamp` 6+ minutes stale. The tray icon shows "recording" when no data is being captured. The user has no way to know the pipeline is stalled.
 
-**Bug 4: Permission recovery restart spam.** The permission recovery component polls every 500ms with no single-fire guard. When permissions are granted, it fires `stopScreenpipe()` + `spawnScreenpipe()` 13 times in 10 seconds, causing cascading server restarts, orphaned process kills, and OCR channel closures.
+**Bug 4: Permission recovery restart spam.** The permission recovery component polls every 500ms with no single-fire guard. When permissions are granted, it fires `stopMEMORA()` + `spawnMEMORA()` 13 times in 10 seconds, causing cascading server restarts, orphaned process kills, and OCR channel closures.
 
 ### 1.3 User Impact
 
 - Fresh install: timeline shows "Building your memory" for 30-60+ seconds. Users think it's broken.
-- Active use: user scrolls through articles, switches tabs, browses — most content is never captured.
+- Active use: user scrolls through articles, switches tabs, browses â€” most content is never captured.
 - Search: "I know I saw that on screen" but it's not in the database.
-- 3-monitor setups: 3× the OCR load, same serial pipeline. CPU spikes, frames drop.
+- 3-monitor setups: 3Ã— the OCR load, same serial pipeline. CPU spikes, frames drop.
 
 ## 2. User Scenarios & Guarantees
 
@@ -52,7 +52,7 @@ Root cause: OCR runs synchronously inside the capture loop. `process_max_average
 ### 2.2 Guarantees
 
 **G1: Every window/app transition is captured.**
-If the focused window changes, a frame of both the old and new state MUST reach the DB within 5 seconds. This is the highest-value event — it represents context switches the user will want to search for.
+If the focused window changes, a frame of both the old and new state MUST reach the DB within 5 seconds. This is the highest-value event â€” it represents context switches the user will want to search for.
 
 **G2: Active content changes are captured.**
 During active use (scrolling, typing, browsing), at least 1 frame every 5 seconds reaches the DB with OCR text. The user should be able to reconstruct what they were looking at during any 10-second window of active use.
@@ -67,13 +67,13 @@ Screen capture must never wait for OCR. If OCR falls behind, drop OCR on older f
 Skip all optimizations for the first frame: no similarity check, no cache, capture only the focused window. Get text into the DB immediately.
 
 **G6: No silent frame drops.**
-Every frame that passes similarity check and completes OCR MUST reach the DB. No "frame not found in write tracker → silently skip" behavior. If the video encoder is slow, store the OCR text with a null video offset and backfill later.
+Every frame that passes similarity check and completes OCR MUST reach the DB. No "frame not found in write tracker â†’ silently skip" behavior. If the video encoder is slow, store the OCR text with a null video offset and backfill later.
 
 **G7: Health reflects reality.**
 If `last_frame_timestamp` is >30s stale and the user is active, `frame_status` should be `stale` or `degraded`. The tray icon should reflect this. The user should never think it's working when it's not.
 
 **G8: Multi-monitor CPU scales sublinearly.**
-3 monitors should cost ~1.5-2× the CPU of 1 monitor, not 3×. Active monitor gets full capture rate. Idle monitors share a reduced budget.
+3 monitors should cost ~1.5-2Ã— the CPU of 1 monitor, not 3Ã—. Active monitor gets full capture rate. Idle monitors share a reduced budget.
 
 ## 3. Architecture
 
@@ -83,9 +83,9 @@ If `last_frame_timestamp` is >30s stale and the user is active, `frame_status` s
 continuous_capture loop (single thread per monitor):
   capture_image()                    ~1ms
   frame_comparer.compare()           ~1ms
-  if diff < 0.02 → skip
+  if diff < 0.02 â†’ skip
   capture_windows()                  ~50-200ms (CGWindowList per window)
-  process_max_average_frame()        ~500-5000ms (Apple OCR per window) ← BLOCKS
+  process_max_average_frame()        ~500-5000ms (Apple OCR per window) â† BLOCKS
   result_tx.send()                   ~0ms (but capture is already stalled)
   sleep(interval)                    2000ms at 0.5fps
 
@@ -95,56 +95,56 @@ Total cycle: 2.5-7+ seconds. Effective rate: 0.15-0.4 fps.
 ### 3.2 Target Pipeline (decoupled, event-driven)
 
 ```
-                    ┌─────────────────────────────────────┐
-                    │         Event Sources                │
-                    │  UI events (focus, scroll, keypress) │
-                    │  Periodic timer (adaptive interval)  │
-                    │  First-frame trigger (server boot)   │
-                    └──────────────┬──────────────────────┘
-                                   │ triggers
-                    ┌──────────────▼──────────────────────┐
-                    │     Capture Thread (per monitor)     │
-                    │                                      │
-                    │  capture_monitor_image()     ~1ms    │
-                    │  frame_comparer.compare()    ~1ms    │
-                    │  if changed OR event-triggered:      │
-                    │    capture_windows()         ~50ms   │
-                    │    push to video_queue (non-block)   │
-                    │    push to ocr_queue (non-block)     │
-                    │                                      │
-                    │  Total cycle: 2-50ms (never blocks)  │
-                    └───────┬──────────────┬──────────────┘
-                            │              │
-                   ┌────────▼───┐   ┌──────▼──────────────┐
-                   │ Video      │   │ OCR Queue            │
-                   │ Encoder    │   │ (priority, bounded)  │
-                   │            │   │                      │
-                   │ write to   │   │ HIGH: transition     │
-                   │ FFmpeg     │   │       frames         │
-                   │ record in  │   │ NORMAL: periodic     │
-                   │ tracker    │   │         frames       │
-                   └────────┬───┘   └──────┬──────────────┘
-                            │              │
-                            │       ┌──────▼──────────────┐
-                            │       │ OCR Worker(s)        │
-                            │       │ (1-3, shared across  │
-                            │       │  all monitors)       │
-                            │       │                      │
-                            │       │ per window:          │
-                            │       │  hash → cache check  │
-                            │       │  changed? → OCR it   │
-                            │       │  same? → reuse cache │
-                            │       └──────┬──────────────┘
-                            │              │
-                   ┌────────▼──────────────▼──────────────┐
-                   │         DB Writer                     │
-                   │                                       │
-                   │  Get video offset from tracker        │
-                   │  If not ready: store with NULL offset │
-                   │    (backfill when encoder catches up) │
-                   │  insert_frames_with_ocr_batch()       │
-                   │  NEVER silently drop                  │
-                   └───────────────────────────────────────┘
+                    â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+                    â”‚         Event Sources                â”‚
+                    â”‚  UI events (focus, scroll, keypress) â”‚
+                    â”‚  Periodic timer (adaptive interval)  â”‚
+                    â”‚  First-frame trigger (server boot)   â”‚
+                    â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+                                   â”‚ triggers
+                    â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â–¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+                    â”‚     Capture Thread (per monitor)     â”‚
+                    â”‚                                      â”‚
+                    â”‚  capture_monitor_image()     ~1ms    â”‚
+                    â”‚  frame_comparer.compare()    ~1ms    â”‚
+                    â”‚  if changed OR event-triggered:      â”‚
+                    â”‚    capture_windows()         ~50ms   â”‚
+                    â”‚    push to video_queue (non-block)   â”‚
+                    â”‚    push to ocr_queue (non-block)     â”‚
+                    â”‚                                      â”‚
+                    â”‚  Total cycle: 2-50ms (never blocks)  â”‚
+                    â””â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+                            â”‚              â”‚
+                   â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â–¼â”€â”€â”€â”   â”Œâ”€â”€â”€â”€â”€â”€â–¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+                   â”‚ Video      â”‚   â”‚ OCR Queue            â”‚
+                   â”‚ Encoder    â”‚   â”‚ (priority, bounded)  â”‚
+                   â”‚            â”‚   â”‚                      â”‚
+                   â”‚ write to   â”‚   â”‚ HIGH: transition     â”‚
+                   â”‚ FFmpeg     â”‚   â”‚       frames         â”‚
+                   â”‚ record in  â”‚   â”‚ NORMAL: periodic     â”‚
+                   â”‚ tracker    â”‚   â”‚         frames       â”‚
+                   â””â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”˜   â””â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+                            â”‚              â”‚
+                            â”‚       â”Œâ”€â”€â”€â”€â”€â”€â–¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+                            â”‚       â”‚ OCR Worker(s)        â”‚
+                            â”‚       â”‚ (1-3, shared across  â”‚
+                            â”‚       â”‚  all monitors)       â”‚
+                            â”‚       â”‚                      â”‚
+                            â”‚       â”‚ per window:          â”‚
+                            â”‚       â”‚  hash â†’ cache check  â”‚
+                            â”‚       â”‚  changed? â†’ OCR it   â”‚
+                            â”‚       â”‚  same? â†’ reuse cache â”‚
+                            â”‚       â””â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+                            â”‚              â”‚
+                   â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â–¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â–¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+                   â”‚         DB Writer                     â”‚
+                   â”‚                                       â”‚
+                   â”‚  Get video offset from tracker        â”‚
+                   â”‚  If not ready: store with NULL offset â”‚
+                   â”‚    (backfill when encoder catches up) â”‚
+                   â”‚  insert_frames_with_ocr_batch()       â”‚
+                   â”‚  NEVER silently drop                  â”‚
+                   â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 ```
 
 ### 3.3 Capture Strategy: Event-Driven + Periodic Baseline
@@ -153,28 +153,28 @@ Replace the fixed-FPS model with an event-driven approach:
 
 ```
 EVENT-DRIVEN (immediate capture, <200ms latency):
-  - Window/app focus change  → capture NOW
-  - URL change in browser    → capture NOW
-  - Significant scroll       → capture NOW (debounced: max 1 per 2s)
+  - Window/app focus change  â†’ capture NOW
+  - URL change in browser    â†’ capture NOW
+  - Significant scroll       â†’ capture NOW (debounced: max 1 per 2s)
 
 ACTIVITY-DRIVEN (adaptive rate):
-  - Mouse/keyboard active    → capture at configured FPS (default 0.5)
-  - No input for 5s          → slow to 0.2 fps
-  - No input for 30s         → slow to 1 frame per 30s
+  - Mouse/keyboard active    â†’ capture at configured FPS (default 0.5)
+  - No input for 5s          â†’ slow to 0.2 fps
+  - No input for 30s         â†’ slow to 1 frame per 30s
 
 SAFETY NET:
-  - No frame for 30s         → force capture regardless of similarity
-  - Server just started      → immediate first frame, skip all filters
+  - No frame for 30s         â†’ force capture regardless of similarity
+  - Server just started      â†’ immediate first frame, skip all filters
 ```
 
-The UI event feed from `screenpipe-accessibility` already provides app switches, keyboard activity, and mouse events. The adaptive FPS feature already reads from it. The change is: use events as **capture triggers**, not just interval hints.
+The UI event feed from `MEMORA-accessibility` already provides app switches, keyboard activity, and mouse events. The adaptive FPS feature already reads from it. The change is: use events as **capture triggers**, not just interval hints.
 
 ### 3.4 Frame Comparison Improvements
 
-**Problem**: Downscale factor 6 (1920→320px) causes hash collisions on real content changes. A browser tab switch may hash-match at 320×180 resolution.
+**Problem**: Downscale factor 6 (1920â†’320px) causes hash collisions on real content changes. A browser tab switch may hash-match at 320Ã—180 resolution.
 
 **Changes**:
-- Reduce downscale factor from 6 to 3 (1920→640px). Histogram comparison at 640×360 is still fast (~1ms).
+- Reduce downscale factor from 6 to 3 (1920â†’640px). Histogram comparison at 640Ã—360 is still fast (~1ms).
 - Keep hash early exit for truly static screens (user left desk), but the larger resolution makes false matches much less likely.
 - Add `max_skip_duration`: if no frame has been sent for OCR in N seconds (default 10s), force-send the next capture regardless of similarity score. This is the safety net that prevents "stuck at 31 frames" forever.
 
@@ -183,8 +183,8 @@ The UI event feed from `screenpipe-accessibility` already provides app switches,
 **Per-window change detection**: When a frame arrives at the OCR worker, don't OCR every window. For each window:
 1. Compute image hash
 2. Check OCR cache (existing, 5-minute TTL)
-3. Cache hit → reuse previous OCR text (free)
-4. Cache miss → run `perform_ocr_apple()` on that window only
+3. Cache hit â†’ reuse previous OCR text (free)
+4. Cache miss â†’ run `perform_ocr_apple()` on that window only
 
 This means if only Safari changed (user scrolled), we OCR Safari (~500ms) and reuse cached text for VS Code, Slack, etc. (free). Total OCR time: 500ms instead of 2-3 seconds.
 
@@ -203,8 +203,8 @@ This means if only Safari changed (user scrolled), we OCR Safari (~500ms) and re
 ### 3.7 First-Frame Fast Path
 
 On server start:
-1. Capture focused window only (skip unfocused windows — saves CGWindowList enumeration time)
-2. Skip similarity comparison (no previous frame to compare against anyway — but explicitly bypass the `max_average` buffering too)
+1. Capture focused window only (skip unfocused windows â€” saves CGWindowList enumeration time)
+2. Skip similarity comparison (no previous frame to compare against anyway â€” but explicitly bypass the `max_average` buffering too)
 3. Run OCR immediately (no cache to check)
 4. Insert to DB
 5. Target: 5 seconds from server start to searchable text in DB
@@ -267,7 +267,7 @@ For power users who want fine control:
 - Active monitor (has focus): full capture rate
 - Background monitor (no focus, recent activity <60s): 50% capture rate
 - Idle monitor (no activity >60s): 10% capture rate, skip OCR (video-only capture for timeline scrubbing)
-- All monitors share the OCR worker pool — active monitor frames get priority
+- All monitors share the OCR worker pool â€” active monitor frames get priority
 
 ## 5. Implementation Plan
 
@@ -275,15 +275,15 @@ For power users who want fine control:
 
 These can ship immediately on the current architecture:
 
-1. **Fix frame write tracker race** — change the DB writer to retry for up to 2 seconds (not 100ms) before giving up, and log at WARN level (not debug) when frames are dropped. Or: ensure video queue is consumed before OCR queue.
+1. **Fix frame write tracker race** â€” change the DB writer to retry for up to 2 seconds (not 100ms) before giving up, and log at WARN level (not debug) when frames are dropped. Or: ensure video queue is consumed before OCR queue.
 
-2. **Fix permission recovery restart spam** — add `useRef(false)` guard so `stopScreenpipe` + `spawnScreenpipe` fires exactly once.
+2. **Fix permission recovery restart spam** â€” add `useRef(false)` guard so `stopMEMORA` + `spawnMEMORA` fires exactly once.
 
-3. **Add `max_skip_duration`** — in `continuous_capture`, track `last_ocr_send_time`. If elapsed > 10 seconds, bypass similarity check and send current frame. Simple 5-line change that prevents "stuck at N frames forever."
+3. **Add `max_skip_duration`** â€” in `continuous_capture`, track `last_ocr_send_time`. If elapsed > 10 seconds, bypass similarity check and send current frame. Simple 5-line change that prevents "stuck at N frames forever."
 
-4. **Reduce downscale factor from 6 to 3** — one-line change in `FrameComparisonConfig::default()`.
+4. **Reduce downscale factor from 6 to 3** â€” one-line change in `FrameComparisonConfig::default()`.
 
-5. **Fix health endpoint** — add `stale` status when `last_frame_timestamp` > 30s and capture loop is still running.
+5. **Fix health endpoint** â€” add `stale` status when `last_frame_timestamp` > 30s and capture loop is still running.
 
 ### Phase 1: Decouple OCR from Capture
 
@@ -294,13 +294,13 @@ Move OCR processing out of `continuous_capture` and into a separate tokio task.
 - New `ocr_worker` task receives from a dedicated channel, runs OCR per window, sends results to the existing `ocr_frame_queue`
 - `process_ocr_task` / `process_max_average_frame` move from being called inside the capture loop to being called inside the OCR worker
 
-**Files**: `crates/screenpipe-vision/src/core.rs`, `crates/screenpipe-server/src/video.rs`
+**Files**: `crates/MEMORA-vision/src/core.rs`, `crates/MEMORA-server/src/video.rs`
 
 **Risk**: Medium. Changes the data flow but the OCR logic itself doesn't change. Existing OCR cache, Apple Native engine, window capture all stay the same.
 
 ### Phase 2: Event-Driven Capture Triggers
 
-Wire UI events (from `screenpipe-accessibility`) as capture triggers.
+Wire UI events (from `MEMORA-accessibility`) as capture triggers.
 
 **Changes**:
 - `continuous_capture` listens on a secondary channel for "capture now" signals
@@ -308,9 +308,9 @@ Wire UI events (from `screenpipe-accessibility`) as capture triggers.
 - When triggered, the capture loop runs immediately instead of waiting for the periodic interval
 - Debounce: max 2 captures per second from event triggers
 
-**Files**: `crates/screenpipe-vision/src/core.rs`, `crates/screenpipe-accessibility/` (if the ActivityFeed needs new event types)
+**Files**: `crates/MEMORA-vision/src/core.rs`, `crates/MEMORA-accessibility/` (if the ActivityFeed needs new event types)
 
-**Risk**: Low. Additive change — the periodic capture still runs as a fallback.
+**Risk**: Low. Additive change â€” the periodic capture still runs as a fallback.
 
 ### Phase 3: Multi-Monitor Priority & OCR Pool
 
@@ -321,7 +321,7 @@ Share OCR workers across monitors with priority scheduling.
 - Priority queue: transition frames (from event triggers) > active monitor frames > idle monitor frames
 - Per-monitor adaptive rate: focused monitor at full FPS, background monitors at reduced rate
 
-**Files**: `crates/screenpipe-server/src/video.rs` (VideoCapture setup), `crates/screenpipe-server/src/core.rs` (worker pool), `crates/screenpipe-server/src/vision_manager/`
+**Files**: `crates/MEMORA-server/src/video.rs` (VideoCapture setup), `crates/MEMORA-server/src/core.rs` (worker pool), `crates/MEMORA-server/src/vision_manager/`
 
 **Risk**: Medium-high. Changes the threading model. Needs careful testing with 1, 2, and 3 monitors.
 
@@ -361,30 +361,30 @@ The DB already has cloud sync columns (migration `20250131000000`):
 - `ocr_text`: `sync_id TEXT`, `synced_at DATETIME`
 - `audio_chunks` / `audio_transcriptions`: same columns
 
-These exist but are currently NULL for all local records. The groundwork is laid — the pipeline changes must not break it.
+These exist but are currently NULL for all local records. The groundwork is laid â€” the pipeline changes must not break it.
 
 ### 7.2 Synchronization Points
 
 The pipeline produces three linked data types that must stay in sync:
 
 ```
-video_chunks  ←  frames  ←  ocr_text
+video_chunks  â†  frames  â†  ocr_text
   (file_path)    (video_chunk_id,     (frame_id,
    device_name)   offset_index,        text,
                   timestamp,           app_name,
                   device_name)         window_name)
 ```
 
-The `frame_id` is the foreign key that ties OCR text to a specific frame in a specific video chunk. Today this is an auto-increment `INTEGER PRIMARY KEY` — unique within a single SQLite database, but NOT globally unique across machines.
+The `frame_id` is the foreign key that ties OCR text to a specific frame in a specific video chunk. Today this is an auto-increment `INTEGER PRIMARY KEY` â€” unique within a single SQLite database, but NOT globally unique across machines.
 
 ### 7.3 What the Decoupled Pipeline Must Preserve
 
 When we move OCR out of the capture loop, the data flow becomes:
 
 ```
-capture thread → raw frame → video encoder → frame written at (chunk_id, offset)
-                           → OCR worker → text extracted
-                                                ↓
+capture thread â†’ raw frame â†’ video encoder â†’ frame written at (chunk_id, offset)
+                           â†’ OCR worker â†’ text extracted
+                                                â†“
                            DB writer: INSERT frame + OCR text together
 ```
 
@@ -398,21 +398,21 @@ capture thread → raw frame → video encoder → frame written at (chunk_id, o
 The decoupled pipeline must ensure:
 - `sync_id` is generated at frame creation time (in the DB writer), not at capture time. This avoids generating UUIDs for frames that get dropped before reaching the DB.
 - `machine_id` is set from a stable device identifier (already exists: `deviceId` in settings store).
-- OCR text rows inherit the `sync_id` and `machine_id` from their parent frame — they don't need independent sync IDs because they're always synced as part of their frame.
+- OCR text rows inherit the `sync_id` and `machine_id` from their parent frame â€” they don't need independent sync IDs because they're always synced as part of their frame.
 
 ### 7.4 Multi-Machine Scenarios
 
-**Scenario: MacBook + Mac Mini, both running screenpipe, cloud sync enabled**
+**Scenario: MacBook + Mac Mini, both running MEMORA, cloud sync enabled**
 
 Each machine runs its own local pipeline independently:
 ```
-MacBook:  capture → OCR → local SQLite (machine_id = "macbook-abc")
-Mac Mini: capture → OCR → local SQLite (machine_id = "macmini-xyz")
-                              ↓
+MacBook:  capture â†’ OCR â†’ local SQLite (machine_id = "macbook-abc")
+Mac Mini: capture â†’ OCR â†’ local SQLite (machine_id = "macmini-xyz")
+                              â†“
                     Cloud sync merges both into unified search
 ```
 
-**What syncs**: OCR text + metadata (timestamp, app_name, window_name, browser_url, device_name, machine_id). This is small — maybe 1-5 KB per frame.
+**What syncs**: OCR text + metadata (timestamp, app_name, window_name, browser_url, device_name, machine_id). This is small â€” maybe 1-5 KB per frame.
 
 **What optionally syncs**: Video chunks. These are large (5-50 MB per chunk). Options:
 - **Text-only sync** (default): Search works across machines. Timeline scrubbing only works on the local machine that captured the frame.
@@ -421,28 +421,28 @@ Mac Mini: capture → OCR → local SQLite (machine_id = "macmini-xyz")
 
 **Dedup**: If both machines capture the same Zoom call, the cloud sees two sets of OCR text for the same content. This is handled at the search/display layer, not the pipeline layer. Options:
 - Show both, grouped by machine ("seen on MacBook" / "seen on Mac Mini")
-- Deduplicate by text similarity + timestamp proximity (>80% text overlap within ±10 seconds = same event)
+- Deduplicate by text similarity + timestamp proximity (>80% text overlap within Â±10 seconds = same event)
 
 ### 7.5 Eventual Consistency with Decoupled OCR
 
-With OCR decoupled from capture, a frame can exist in the DB before OCR completes (if we implement Option B from section 3.6 — NULL video offset with backfill). For cloud sync:
+With OCR decoupled from capture, a frame can exist in the DB before OCR completes (if we implement Option B from section 3.6 â€” NULL video offset with backfill). For cloud sync:
 
-- **Option 1 (simpler)**: Only sync frames that have completed OCR. The sync query becomes `WHERE synced_at IS NULL AND text IS NOT NULL`. Slight delay (seconds) before new frames are sync-eligible. This is fine — sync intervals are typically 30-60 seconds anyway.
+- **Option 1 (simpler)**: Only sync frames that have completed OCR. The sync query becomes `WHERE synced_at IS NULL AND text IS NOT NULL`. Slight delay (seconds) before new frames are sync-eligible. This is fine â€” sync intervals are typically 30-60 seconds anyway.
 - **Option 2**: Sync frames immediately, even without OCR text. Then sync the OCR text separately when it completes. Requires the receiving machine to handle "frame with no text yet" and update it later. More complex, marginal benefit.
 
-**Recommendation**: Option 1. Only sync complete records. The sync interval already introduces minutes of latency — adding seconds for OCR to complete is negligible.
+**Recommendation**: Option 1. Only sync complete records. The sync interval already introduces minutes of latency â€” adding seconds for OCR to complete is negligible.
 
 ### 7.6 Requirements for Pipeline Changes
 
 To not paint ourselves into a corner for cloud sync:
 
-1. **Video file paths must be relative.** Store `data/monitor_21_2026-02-13_02-24-24.mp4` in the DB, not `/Users/louis/.screenpipe/data/...`. The base directory is machine-specific; the relative path is portable. *(Note: check if this is already the case — if absolute paths are stored, this needs a migration.)*
+1. **Video file paths must be relative.** Store `data/monitor_21_2026-02-13_02-24-24.mp4` in the DB, not `/Users/louis/.MEMORA/data/...`. The base directory is machine-specific; the relative path is portable. *(Note: check if this is already the case â€” if absolute paths are stored, this needs a migration.)*
 
-2. **`sync_id` should be set at DB insertion time.** The DB writer generates a UUID when inserting the frame row. Not at capture time (too early — frame might be dropped) and not at sync time (too late — other machines can't reference it).
+2. **`sync_id` should be set at DB insertion time.** The DB writer generates a UUID when inserting the frame row. Not at capture time (too early â€” frame might be dropped) and not at sync time (too late â€” other machines can't reference it).
 
 3. **`machine_id` should be populated.** Currently these columns exist but are NULL. The pipeline should set `machine_id` from the settings store `deviceId` on every new record. This is a prerequisite for sync to work.
 
-4. **OCR text rows should be insertable independently from video offset.** If we allow NULL `offset_index` (for frames where video encoding hasn't caught up), the frame is still searchable by text. The video offset can be backfilled later. This also helps cloud sync — a synced frame from another machine has no local video file, so its offset is meaningless on the receiving machine anyway.
+4. **OCR text rows should be insertable independently from video offset.** If we allow NULL `offset_index` (for frames where video encoding hasn't caught up), the frame is still searchable by text. The video offset can be backfilled later. This also helps cloud sync â€” a synced frame from another machine has no local video file, so its offset is meaningless on the receiving machine anyway.
 
 5. **The shared OCR worker pool must namespace by monitor.** With multiple monitors on one machine, the OCR queue receives frames from all monitors. Each frame must carry its `device_name` (e.g., `monitor_21`) so the DB writer inserts it under the correct device. With multiple machines syncing, each frame also carries `machine_id`. The composite key `(machine_id, device_name, timestamp)` uniquely identifies any frame across any number of machines and monitors.
 
@@ -450,7 +450,7 @@ To not paint ourselves into a corner for cloud sync:
 
 - Changing the OCR engine (Apple Native is correct for macOS)
 - Changing the video encoding format (FFmpeg H.265 is correct)
-- Real-time streaming OCR (not needed — 0.5-1fps is sufficient for search)
+- Real-time streaming OCR (not needed â€” 0.5-1fps is sufficient for search)
 - Cross-platform changes (this spec is macOS-focused; Windows pipeline may differ)
 - Implementing cloud sync itself (this spec ensures the pipeline doesn't block it)
 - Changing the DB schema beyond what's needed for pipeline correctness (sync columns already exist)

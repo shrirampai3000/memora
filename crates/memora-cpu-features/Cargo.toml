@@ -1,0 +1,17 @@
+﻿# MEMORA â€” AI that knows everything you've seen, said, or heard
+# https://github.com/shrirampai3000/memora
+
+# Leaf crate on purpose: runtime CPU-feature detection is needed by both
+# memora-core AND memora-config, and config cannot depend on core
+# (cycle: core â†’ memora-secrets â†’ config). Zero dependencies â€” keep it
+# that way so it can sit below everything.
+[package]
+name = "memora-cpu-features"
+version.workspace = true
+authors.workspace = true
+description = "Runtime CPU feature detection (AVX2 gating) for MEMORA"
+repository.workspace = true
+license.workspace = true
+edition.workspace = true
+
+[dependencies]

@@ -1,0 +1,28 @@
+﻿[package]
+name = "memora-config"
+version.workspace = true
+authors.workspace = true
+description = "Shared recording configuration for MEMORA (app, CLI, and engine)"
+repository.workspace = true
+license.workspace = true
+edition.workspace = true
+
+[dependencies]
+# Runtime CPU-feature detection (has_avx2) for the engine safety checks in
+# defaults.rs â€” whisper/qwen3 are AVX2-compiled on x64. NOT memora-core:
+# that would be a package cycle (core â†’ memora-secrets â†’ config).
+memora-cpu-features = { path = "../memora-cpu-features" }
+serde = { workspace = true }
+serde_json = { workspace = true }
+toml = { workspace = true }
+dirs = { workspace = true }
+sysinfo = { workspace = true }
+specta = { workspace = true, optional = true }
+
+[features]
+default = []
+specta = ["dep:specta"]
+
+[dev-dependencies]
+serde_json = { workspace = true }
+tempfile = { workspace = true }

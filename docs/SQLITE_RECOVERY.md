@@ -1,10 +1,10 @@
-# SQLite quarantine and recovery
+﻿# SQLite quarantine and recovery
 
-<!-- doc-covers: crates/screenpipe-sqlite-recovery, crates/screenpipe-sqlite-coordinator -->
+<!-- doc-covers: crates/MEMORA-sqlite-recovery, crates/MEMORA-sqlite-coordinator -->
 <!-- doc-verified: 8be4d97b8 -->
 > **Current.** Last verified against 8be4d97b8 (2026-08-03).
 
-Screenpipe treats `SQLITE_IOERR`, `SQLITE_CORRUPT`, `SQLITE_FULL`, and
+MEMORA treats `SQLITE_IOERR`, `SQLITE_CORRUPT`, `SQLITE_FULL`, and
 `SQLITE_NOTADB` as generation-ending faults. A new connection, pool, engine, or
 app process is not recovery: it would still open the same physical database and
 the same WAL generation.
@@ -35,7 +35,7 @@ time, and physical file identity:
 - Windows: volume serial number and file index.
 
 The marker is separate from `db.sqlite`, `db.sqlite-wal`, and
-`db.sqlite-shm`. Relaunching Screenpipe therefore does not forget the fault.
+`db.sqlite-shm`. Relaunching MEMORA therefore does not forget the fault.
 Malformed recovery metadata is also fail-closed.
 
 ## Authoritative file lifecycles
@@ -73,7 +73,7 @@ active writes, pinned reads, checkpoint waits, and post-checkpoint writes.
 
 ## Offline recovery contract
 
-`screenpipe db recover` requires Screenpipe to be stopped. `--force` cannot
+`MEMORA db recover` requires MEMORA to be stopped. `--force` cannot
 override a reachable server because a live connection makes an exact generation
 snapshot impossible.
 
@@ -82,7 +82,7 @@ snapshot impossible.
    checkpointing the quarantined generation. Compare file identity, length, and
    nanosecond modification time before/after the copy and again before swap; if
    anything changed, refuse recovery because the source was not truly offline.
-3. Run SQLite's official page-level Recovery API, compiled into Screenpipe,
+3. Run SQLite's official page-level Recovery API, compiled into MEMORA,
    against only that working copy. Recovery never depends on a host `sqlite3`
    executable or package-manager installation.
 4. Require the candidate's physical identity to differ from every quarantined
@@ -110,5 +110,5 @@ normal install or post-install verification error also rolls the original files
 back and leaves quarantine active.
 
 Recovery artifacts are retained for inspection until the user runs
-`screenpipe db cleanup --apply`. Cleanup refuses to delete recovery directories
+`MEMORA db cleanup --apply`. Cleanup refuses to delete recovery directories
 while an active quarantine marker exists.

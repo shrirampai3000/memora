@@ -1,4 +1,4 @@
-# Human-only app publication
+﻿# Human-only app publication
 
 <!-- doc-covers: none -->
 
@@ -6,7 +6,7 @@ The app release pipeline deliberately separates artifact preparation from public
 
 ## AI and automation may release artifacts
 
-`Release App` and `Release Enterprise` may build, sign, notarize, and upload immutable versioned objects. Their only R2 capability is the `screenpipe-release-artifact-uploader` service. That service accepts these key shapes:
+`Release App` and `Release Enterprise` may build, sign, notarize, and upload immutable versioned objects. Their only R2 capability is the `MEMORA-release-artifact-uploader` service. That service accepts these key shapes:
 
 - `releases/<version>/<target>/<artifact>`
 - `enterprise/releases/<version>/<target>/<artifact>`

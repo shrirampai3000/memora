@@ -1,4 +1,4 @@
-# Binaries for programs and examples
+﻿# Binaries for programs and examples
 *.exe
 *.exe~
 *.dll
@@ -51,7 +51,6 @@ app.py
 *.pyo
 *.pyd
 *.py
-!scripts/memory-leak/leak_hunt.py
 *.pyw
 *.pyz
 *.py3
@@ -59,72 +58,40 @@ app.py
 *.py3z
 __pycache__/
 
-screenpipe-app-tauri/src-tauri/.next/
+apps/memora-app-tauri/src-tauri/.next/
 .vercel
 .wrangler/
-
-
 
 .playwright*
 
 # Claude Code
 .claude/worktrees/
-# Claude desktop app runs `git worktree add` with `-c core.hooksPath=/dev/null`;
-# on Windows git-lfs resolves that as a relative path and drops its hooks into
-# a literal dev/null/ dir at the worktree root. Harmless but noisy — ignore it.
 /dev/null/
-.claude/*.local* # local changes are specific to the individual developer, let's not check them in for everyone.
+.claude/*.local*
 .claude/*.lock
-apps/screenpipe-app-tauri/src-tauri/onnxruntime-win-arm64-1.19.2/
-apps/screenpipe-app-tauri/src-tauri/onnxruntime-win-x64-1.19.2/
-crates/screenpipe-audio/onnxruntime-win-x64-1.19.2.zip
-crates/screenpipe-audio/onnxruntime-win-arm64-1.19.2.zip
-crates/screenpipe-audio/openblas-0.3.31-x64.zip
-crates/screenpipe-audio/openblas-0.3.31-woa64-dll.zip
-apps/screenpipe-app-tauri/src-tauri/openblas/
-apps/screenpipe-app-tauri/src-tauri/mlx.metallib
-apps/screenpipe-app-tauri/src-tauri/mlx.metallib-*
-apps/screenpipe-app-tauri/src-tauri/libonnxruntime.dylib
-.serena/
-.worktrees/
 
-# license copies staged into npm packages at publish time (canonical: /LICENSE.md)
-packages/cli/*/LICENSE.md
-packages/screenpipe-mcp/LICENSE.md
-packages/sdk/LICENSE.md
-packages/sdk/npm/*/LICENSE.md
-
-# Test artifacts: a temp-DB path that keeps its "sqlite:" URI prefix creates a
-# literal directory of that name next to the crate. Junk, but easy to commit by
-# accident with `git add -A`.
+# Test artifacts
 sqlite:/
 
-# Memora: removed subsystems (audio, cloud infra, SDK, CLI)
-crates/screenpipe-audio/
-crates/screenpipe-audio-eval/
-crates/screenpipe-meeting-eval/
-crates/screenpipe-gateway/
-crates/screenpipe-sync/
-crates/screenpipe-rfdetr-mlx/
+# Removed subsystems (audio, cloud infra, SDK, CLI)
+crates/MEMORA-audio/
+crates/MEMORA-audio-eval/
+crates/MEMORA-meeting-eval/
+crates/MEMORA-gateway/
+crates/MEMORA-sync/
+crates/MEMORA-rfdetr-mlx/
+crates/MEMORA-telemetry-wire/
+crates/MEMORA-team-memory/
 packages/ai-gateway/
-packages/browser-extension/
 packages/cli/
-packages/e2e/
-packages/screenpipe-mcp/
 packages/sdk/
 infra/
 .devcontainer/
 .design-sync/
 .claude/
-scripts/dev-vm/
-scripts/tcc-grant/
-scripts/memory-leak/
 pipes/
 
-# GitHub Actions (not needed for this project)
-.github/
-
-# Removed subsystems � keep out of git permanently
+# Removed docs subsystems
 docs/mintlify/
 docs/pr-assets/
 docs/translations/
@@ -132,17 +99,5 @@ docs/mockups/
 docs/remote-agent/
 docs/screenshots/
 docs/skills-registry/
-crates/screenpipe-telemetry-wire/
-crates/screenpipe-team-memory/
-crates/screenpipe-connect/
-crates/screenpipe-vault/
-crates/screenpipe-secrets/
-scripts/
-infra/
 .dockerignore
-biome.json
 lefthook.yml
-AGENTS.md
-DESIGN.md
-TESTING.md
-rust-toolchain.toml

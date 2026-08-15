@@ -1,8 +1,8 @@
-# Single-Click Summaries — Product Spec
+﻿# Single-Click Summaries â€” Product Spec
 
-<!-- doc-covers: apps/screenpipe-app-tauri/components/chat -->
+<!-- doc-covers: apps/MEMORA-app-tauri/components/chat -->
 <!-- doc-verified: 3606788c6 -->
-> **Historical.** Last verified against 3606788c6 (2026-02-19). `apps/screenpipe-app-tauri/components/chat` has moved a long way
+> **Historical.** Last verified against 3606788c6 (2026-02-19). `apps/MEMORA-app-tauri/components/chat` has moved a long way
 > since; read this for original intent only. Names, signatures, and thresholds are
 > probably wrong. The code wins. Run `bun scripts/check-doc-freshness.ts` for current drift.
 
@@ -14,7 +14,7 @@
 
 ## Problem
 
-Screenpipe records everything you see, say, and hear — but most users never ask the AI anything meaningful. The current empty chat state shows a few auto-suggestions ("What did I do in the last hour?"), but they're small, text-only, and easy to ignore. Users who don't know what to ask just stare at the input box and leave.
+MEMORA records everything you see, say, and hear â€” but most users never ask the AI anything meaningful. The current empty chat state shows a few auto-suggestions ("What did I do in the last hour?"), but they're small, text-only, and easy to ignore. Users who don't know what to ask just stare at the input box and leave.
 
 **Evidence:**
 - Auto-suggestions exist (via `suggestions.rs`) but are small text buttons at the bottom of the empty chat
@@ -22,15 +22,15 @@ Screenpipe records everything you see, say, and hear — but most users never as
 - Daily Summary exists but is limited to timeline view, auto-triggers only at 6 PM, and only covers audio transcriptions
 - Menelaus (power user): "A lot of users might not know what to ask but having these auto-suggestions and one-click prompts makes everything a lot easier"
 
-**Core tension:** Screenpipe collects 2K-13K+ memories per day, but the value is locked behind a blank text box.
+**Core tension:** MEMORA collects 2K-13K+ memories per day, but the value is locked behind a blank text box.
 
 ---
 
 ## Solution
 
-**"Single-Click Summaries"** — a prompt template library and visual builder that makes screenpipe's value immediately obvious. Instead of a blank chat, users see curated one-click actions that generate structured summaries from their data.
+**"Single-Click Summaries"** â€” a prompt template library and visual builder that makes MEMORA's value immediately obvious. Instead of a blank chat, users see curated one-click actions that generate structured summaries from their data.
 
-Menelaus calls this an "Enhanced AI Prompt Builder" — consumer-friendly, visually pleasing, accessible to non-technical users.
+Menelaus calls this an "Enhanced AI Prompt Builder" â€” consumer-friendly, visually pleasing, accessible to non-technical users.
 
 ---
 
@@ -49,7 +49,7 @@ Menelaus calls this an "Enhanced AI Prompt Builder" — consumer-friendly, visua
 | **Professional Persona** | Work style analysis for self-improvement |
 | **Week Recap** | Weekly review without manual journaling |
 
-**Key insight from Menelaus:** He mostly uses Time Breakdown, Day Recap, and AI Habits — the ones that answer "what did I actually do?" without requiring the user to remember.
+**Key insight from Menelaus:** He mostly uses Time Breakdown, Day Recap, and AI Habits â€” the ones that answer "what did I actually do?" without requiring the user to remember.
 
 ---
 
@@ -60,29 +60,29 @@ Menelaus calls this an "Enhanced AI Prompt Builder" — consumer-friendly, visua
 Replaces the current empty chat state. Shows before any conversation is initiated.
 
 ```
-┌─────────────────────────────────────────────┐
-│                                             │
-│          [PI icon]                          │
-│    How can I help today, {name}?            │
-│                                             │
-│  ┌─────────────┐ ┌─────────────┐ ┌────────────────┐
-│  │ 📋 Day      │ │ 🏢 Standup  │ │ ✨ Custom      │
-│  │ Recap       │ │ Update      │ │ Summary        │
-│  │ Today's     │ │ What you    │ │ Custom time,   │
-│  │ accomplish- │ │ did, next,  │ │ filters &      │
-│  │ ments...    │ │ blockers    │ │ instructions   │
-│  └─────────────┘ └─────────────┘ └────────────────┘
-│  ┌─────────────┐ ┌─────────────┐ ┌────────────────┐
-│  │ ❗ Top of   │ │ 🤖 AI      │ │ 🔍 Discover    │
-│  │ Mind        │ │ Habits      │ │ Reminders,     │
-│  │ Recurring   │ │ AI usage &  │ │ Recaps, and    │
-│  │ topics...   │ │ model pref  │ │ More...        │
-│  └─────────────┘ └─────────────┘ └────────────────┘
-│                                             │
-│  ┌─────────────────────────────────────────┐│
-│  │ Ask about your screen activity...       ││
-│  └─────────────────────────────────────────┘│
-└─────────────────────────────────────────────┘
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚                                             â”‚
+â”‚          [PI icon]                          â”‚
+â”‚    How can I help today, {name}?            â”‚
+â”‚                                             â”‚
+â”‚  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â” â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â” â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚  â”‚ ðŸ“‹ Day      â”‚ â”‚ ðŸ¢ Standup  â”‚ â”‚ âœ¨ Custom      â”‚
+â”‚  â”‚ Recap       â”‚ â”‚ Update      â”‚ â”‚ Summary        â”‚
+â”‚  â”‚ Today's     â”‚ â”‚ What you    â”‚ â”‚ Custom time,   â”‚
+â”‚  â”‚ accomplish- â”‚ â”‚ did, next,  â”‚ â”‚ filters &      â”‚
+â”‚  â”‚ ments...    â”‚ â”‚ blockers    â”‚ â”‚ instructions   â”‚
+â”‚  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜ â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜ â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+â”‚  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â” â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â” â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚  â”‚ â— Top of   â”‚ â”‚ ðŸ¤– AI      â”‚ â”‚ ðŸ” Discover    â”‚
+â”‚  â”‚ Mind        â”‚ â”‚ Habits      â”‚ â”‚ Reminders,     â”‚
+â”‚  â”‚ Recurring   â”‚ â”‚ AI usage &  â”‚ â”‚ Recaps, and    â”‚
+â”‚  â”‚ topics...   â”‚ â”‚ model pref  â”‚ â”‚ More...        â”‚
+â”‚  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜ â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜ â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+â”‚                                             â”‚
+â”‚  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”â”‚
+â”‚  â”‚ Ask about your screen activity...       â”‚â”‚
+â”‚  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 ```
 
 **Behavior:**
@@ -90,7 +90,7 @@ Replaces the current empty chat state. Shows before any conversation is initiate
 - Clicking a card immediately sends the corresponding prompt to PI agent
 - "Discover" opens the full library modal (Component 2)
 - "Custom Summary" opens the builder modal (Component 3)
-- Chat input remains at the bottom — this doesn't block regular usage
+- Chat input remains at the bottom â€” this doesn't block regular usage
 - Once a message is sent, the landing page disappears (same as current behavior)
 
 **Which 5 cards to feature?** Based on Menelaus' usage data:
@@ -106,27 +106,27 @@ Replaces the current empty chat state. Shows before any conversation is initiate
 Full library of all templates, opened from the "Discover" card or a menu button.
 
 ```
-┌─────────────────────────────────────────────────┐
-│  Single-Click Summaries                    [X]  │
-│                                                 │
-│  The easiest way to leverage your artificial    │
-│  memories. Access a growing library of          │
-│  single-click summaries...                      │
-│                                                 │
-│  ┌──────────────────┐  ┌──────────────────┐     │
-│  │ ❗ What's Top of │  │ 🌅 Morning Brief │     │
-│  │ Mind             │  │ Everything to    │     │
-│  │ Recurring topics │  │ kickstart your   │     │
-│  │ ranked by import │  │ day              │     │
-│  │    [See action]  │  │    [See action]  │     │
-│  └──────────────────┘  └──────────────────┘     │
-│  ┌──────────────────┐  ┌──────────────────┐     │
-│  │ 🏢 Standup       │  │ ⏱ Time          │     │
-│  │ Update           │  │ Breakdown        │     │
-│  │ ...              │  │ ...              │     │
-│  └──────────────────┘  └──────────────────┘     │
-│  ... (2-column grid, all 10 templates)          │
-└─────────────────────────────────────────────────┘
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚  Single-Click Summaries                    [X]  â”‚
+â”‚                                                 â”‚
+â”‚  The easiest way to leverage your artificial    â”‚
+â”‚  memories. Access a growing library of          â”‚
+â”‚  single-click summaries...                      â”‚
+â”‚                                                 â”‚
+â”‚  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”     â”‚
+â”‚  â”‚ â— What's Top of â”‚  â”‚ ðŸŒ… Morning Brief â”‚     â”‚
+â”‚  â”‚ Mind             â”‚  â”‚ Everything to    â”‚     â”‚
+â”‚  â”‚ Recurring topics â”‚  â”‚ kickstart your   â”‚     â”‚
+â”‚  â”‚ ranked by import â”‚  â”‚ day              â”‚     â”‚
+â”‚  â”‚    [See action]  â”‚  â”‚    [See action]  â”‚     â”‚
+â”‚  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜     â”‚
+â”‚  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”     â”‚
+â”‚  â”‚ ðŸ¢ Standup       â”‚  â”‚ â± Time          â”‚     â”‚
+â”‚  â”‚ Update           â”‚  â”‚ Breakdown        â”‚     â”‚
+â”‚  â”‚ ...              â”‚  â”‚ ...              â”‚     â”‚
+â”‚  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜     â”‚
+â”‚  ... (2-column grid, all 10 templates)          â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 ```
 
 **Behavior:**
@@ -140,52 +140,52 @@ Full library of all templates, opened from the "Discover" card or a menu button.
 Advanced modal for power users. The main differentiator from simple one-click templates.
 
 ```
-┌───────────────────────────────────────────────────────────┐
-│  ✨ Custom Summary                                  [X]  │
-│                                                           │
-│  ┌─ Left Panel ──────┐  ┌─ Right Panel ────────────────┐ │
-│  │                    │  │                              │ │
-│  │ ⏰ Time Period [1] │  │ What should the summary      │ │
-│  │                    │  │ focus on?                    │ │
-│  │  Last 5 min     9  │  │                              │ │
-│  │  Last 30 min   61  │  │ ┌──────────────────────────┐ │ │
-│  │  Last 2 hours 479  │  │ │ Type your custom         │ │ │
-│  │  ✓ Today    2.6K  │  │ │ instructions for 2.82K   │ │ │
-│  │  Past 24h     3K  │  │ │ memories from today...   │ │ │
-│  │  Yesterday  1.4K  │  │ │                          │ │ │
-│  │  This Week  8.9K  │  │ │                          │ │ │
-│  │  Last Week  4.2K  │  │ │                          │ │ │
-│  │  This Month 13.1K │  │ │                     0/1K │ │ │
-│  │  Last Month       │  │ └──────────────────────────┘ │ │
-│  │                    │  │                              │ │
-│  │ 📡 Signals    [v] │  │  QUICK TEMPLATES             │ │
-│  │ 📱 Apps       [v] │  │  [Status Update]             │ │
-│  │ 🌐 Websites   [v] │  │  [Key Decisions]             │ │
-│  │                    │  │  [Action Items]              │ │
-│  └────────────────────┘  │  [Meeting Prep]              │ │
-│                          │  [Blockers]                  │ │
-│                          └──────────────────────────────┘ │
-│                                                           │
-│  Processing 2.82K memories from today                     │
-│                        [Save as Template] [✨ Generate]   │
-└───────────────────────────────────────────────────────────┘
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚  âœ¨ Custom Summary                                  [X]  â”‚
+â”‚                                                           â”‚
+â”‚  â”Œâ”€ Left Panel â”€â”€â”€â”€â”€â”€â”  â”Œâ”€ Right Panel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â” â”‚
+â”‚  â”‚                    â”‚  â”‚                              â”‚ â”‚
+â”‚  â”‚ â° Time Period [1] â”‚  â”‚ What should the summary      â”‚ â”‚
+â”‚  â”‚                    â”‚  â”‚ focus on?                    â”‚ â”‚
+â”‚  â”‚  Last 5 min     9  â”‚  â”‚                              â”‚ â”‚
+â”‚  â”‚  Last 30 min   61  â”‚  â”‚ â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â” â”‚ â”‚
+â”‚  â”‚  Last 2 hours 479  â”‚  â”‚ â”‚ Type your custom         â”‚ â”‚ â”‚
+â”‚  â”‚  âœ“ Today    2.6K  â”‚  â”‚ â”‚ instructions for 2.82K   â”‚ â”‚ â”‚
+â”‚  â”‚  Past 24h     3K  â”‚  â”‚ â”‚ memories from today...   â”‚ â”‚ â”‚
+â”‚  â”‚  Yesterday  1.4K  â”‚  â”‚ â”‚                          â”‚ â”‚ â”‚
+â”‚  â”‚  This Week  8.9K  â”‚  â”‚ â”‚                          â”‚ â”‚ â”‚
+â”‚  â”‚  Last Week  4.2K  â”‚  â”‚ â”‚                          â”‚ â”‚ â”‚
+â”‚  â”‚  This Month 13.1K â”‚  â”‚ â”‚                     0/1K â”‚ â”‚ â”‚
+â”‚  â”‚  Last Month       â”‚  â”‚ â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜ â”‚ â”‚
+â”‚  â”‚                    â”‚  â”‚                              â”‚ â”‚
+â”‚  â”‚ ðŸ“¡ Signals    [v] â”‚  â”‚  QUICK TEMPLATES             â”‚ â”‚
+â”‚  â”‚ ðŸ“± Apps       [v] â”‚  â”‚  [Status Update]             â”‚ â”‚
+â”‚  â”‚ ðŸŒ Websites   [v] â”‚  â”‚  [Key Decisions]             â”‚ â”‚
+â”‚  â”‚                    â”‚  â”‚  [Action Items]              â”‚ â”‚
+â”‚  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜  â”‚  [Meeting Prep]              â”‚ â”‚
+â”‚                          â”‚  [Blockers]                  â”‚ â”‚
+â”‚                          â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜ â”‚
+â”‚                                                           â”‚
+â”‚  Processing 2.82K memories from today                     â”‚
+â”‚                        [Save as Template] [âœ¨ Generate]   â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 ```
 
-**Left Panel — Filters:**
-- **Time Period:** Predefined ranges with live memory counts from screenpipe DB
-- **Signals:** Filter by content type (OCR, audio, UI/accessibility) — maps to `content_type` in search API
-- **Apps:** Multi-select app filter (from recorded apps) — maps to `app_name`
-- **Websites:** Multi-select website/URL filter — maps to `window_name` or new `browser_url` field
+**Left Panel â€” Filters:**
+- **Time Period:** Predefined ranges with live memory counts from MEMORA DB
+- **Signals:** Filter by content type (OCR, audio, UI/accessibility) â€” maps to `content_type` in search API
+- **Apps:** Multi-select app filter (from recorded apps) â€” maps to `app_name`
+- **Websites:** Multi-select website/URL filter â€” maps to `window_name` or new `browser_url` field
 
-**Right Panel — Prompt Builder:**
+**Right Panel â€” Prompt Builder:**
 - Free-text instructions (1000 char limit)
 - Quick template chips that pre-fill the text area
 - Placeholder shows memory count for selected time range
 
 **Bottom Bar:**
 - Live count: "Processing X memories from {period}"
-- "Save as Template" — saves to user's custom templates (local storage or pipes)
-- "Generate Summary" — sends filtered prompt to PI agent
+- "Save as Template" â€” saves to user's custom templates (local storage or pipes)
+- "Generate Summary" â€” sends filtered prompt to PI agent
 
 ---
 
@@ -194,22 +194,22 @@ Advanced modal for power users. The main differentiator from simple one-click te
 ### One-Click Summary Flow
 ```
 User clicks "Day Recap"
-  → Frontend builds prompt: system context + template prompt + time filter
-  → Sends to PI agent via sendPiMessage()
-  → PI queries /search API with time range + content filters
-  → PI generates structured summary
-  → Response streams into chat
+  â†’ Frontend builds prompt: system context + template prompt + time filter
+  â†’ Sends to PI agent via sendPiMessage()
+  â†’ PI queries /search API with time range + content filters
+  â†’ PI generates structured summary
+  â†’ Response streams into chat
 ```
 
 ### Custom Summary Flow
 ```
 User configures filters + instructions
-  → Frontend builds search query from filters
-  → Pre-fetches memory count: GET /search?count_only=true&start_time=X&end_time=Y
-  → On "Generate": sends compound prompt to PI agent
-  → Prompt includes: time range, app filter, content type, user instructions
-  → PI agent executes search + generates summary
-  → Response streams into chat
+  â†’ Frontend builds search query from filters
+  â†’ Pre-fetches memory count: GET /search?count_only=true&start_time=X&end_time=Y
+  â†’ On "Generate": sends compound prompt to PI agent
+  â†’ Prompt includes: time range, app filter, content type, user instructions
+  â†’ PI agent executes search + generates summary
+  â†’ Response streams into chat
 ```
 
 ### Memory Count Query
@@ -217,7 +217,7 @@ Each time period / filter selection triggers a lightweight count query:
 ```
 GET /search?start_time={ISO}&end_time={ISO}&app_name={filter}&limit=0&count_only=true
 ```
-This powers the "2.82K memories from today" indicator. Uses existing search API — may need a `count_only` param to avoid returning full results.
+This powers the "2.82K memories from today" indicator. Uses existing search API â€” may need a `count_only` param to avoid returning full results.
 
 ---
 
@@ -264,14 +264,14 @@ what I used them for, and patterns in my AI usage.
 ## Edge Cases & Considerations
 
 ### Data Availability
-- **New user (no data):** Show templates grayed out with "Start recording to unlock summaries" message. Don't show memory counts of 0 — it's discouraging.
+- **New user (no data):** Show templates grayed out with "Start recording to unlock summaries" message. Don't show memory counts of 0 â€” it's discouraging.
 - **Partial data (OCR only, no audio):** Templates that rely on audio (Meeting Prep, Collaboration Patterns) should indicate "Audio recordings not available" and adapt.
-- **Very old time ranges:** "Last Month" with 13K memories — the PI agent may hit token limits. Need to either pre-filter/sample or chunk the query.
+- **Very old time ranges:** "Last Month" with 13K memories â€” the PI agent may hit token limits. Need to either pre-filter/sample or chunk the query.
 
 ### Performance
-- **Memory count queries:** Must be fast (<100ms). Current `/search` returns full results — need lightweight count endpoint or cache layer.
+- **Memory count queries:** Must be fast (<100ms). Current `/search` returns full results â€” need lightweight count endpoint or cache layer.
 - **Large result sets:** PI agent's search skill caps at 10 results / 4000 chars. For "Time Breakdown" across a full day, this may be insufficient. Consider: (a) multiple search passes, (b) pre-aggregated stats endpoint, (c) SQL-based aggregation.
-- **Concurrent requests:** User clicks multiple templates quickly — debounce or queue.
+- **Concurrent requests:** User clicks multiple templates quickly â€” debounce or queue.
 
 ### Template Quality
 - **Generic prompts produce generic results.** Templates must include specific instructions: "include timestamps", "group by app", "show duration in hours:minutes".
@@ -279,19 +279,19 @@ what I used them for, and patterns in my AI usage.
 - **Formatting consistency:** Define expected output format per template (markdown sections, tables, bullet points) so results feel polished.
 
 ### Custom Summary Builder
-- **Filter combinatorics:** User selects "Last Week" + "Chrome" + "Audio only" — the intersection might be empty. Show live count to set expectations.
-- **App/website list loading:** Must query distinct apps from DB. Existing `/search` doesn't expose this — may need new endpoint or cache from `suggestions.rs` activity detection.
-- **"Save as Template" persistence:** Where to store? Options: (a) localStorage — simplest, lost on reinstall, (b) screenpipe DB — survives reinstalls, (c) as a Pipe — enables scheduling.
+- **Filter combinatorics:** User selects "Last Week" + "Chrome" + "Audio only" â€” the intersection might be empty. Show live count to set expectations.
+- **App/website list loading:** Must query distinct apps from DB. Existing `/search` doesn't expose this â€” may need new endpoint or cache from `suggestions.rs` activity detection.
+- **"Save as Template" persistence:** Where to store? Options: (a) localStorage â€” simplest, lost on reinstall, (b) MEMORA DB â€” survives reinstalls, (c) as a Pipe â€” enables scheduling.
 
 ### Pipes Integration
 - Louis noted: "I think it would go well with the pipes, which is basically scheduled prompt, so you could easily end a good chat and then wanting to have this kind of summary on schedule"
-- **"Save as Template" → Create Pipe:** User's custom summary config (filters + prompt) could be exported as a `pipe.md` with a schedule. E.g., "Day Recap at 6 PM every weekday."
-- **Existing Daily Summary overlap:** `daily-summary.tsx` already generates a summary at 6 PM. This feature supersedes it — more flexible, more templates, user-configurable. Could deprecate the hardcoded daily summary.
+- **"Save as Template" â†’ Create Pipe:** User's custom summary config (filters + prompt) could be exported as a `pipe.md` with a schedule. E.g., "Day Recap at 6 PM every weekday."
+- **Existing Daily Summary overlap:** `daily-summary.tsx` already generates a summary at 6 PM. This feature supersedes it â€” more flexible, more templates, user-configurable. Could deprecate the hardcoded daily summary.
 
 ### UI/UX
 - **Mobile/small screens:** The builder modal is complex (two panels). On narrow windows, stack vertically or collapse filters into a sheet.
 - **Accessibility:** Cards need keyboard navigation, ARIA labels, focus management in modal.
-- **Dark mode:** Menelaus' screenshots show a dark UI — ensure all components respect the existing theme system.
+- **Dark mode:** Menelaus' screenshots show a dark UI â€” ensure all components respect the existing theme system.
 - **Animation:** Cards should have subtle hover states. Modal should animate in. Loading state during generation should feel polished (current grid-dissolve animation could work).
 
 ### Privacy
@@ -306,7 +306,7 @@ what I used them for, and patterns in my AI usage.
 | Existing | Use For |
 |----------|---------|
 | `suggestions.rs` auto-suggestions | Activity detection for context-aware featured cards |
-| PI agent (`pi.rs`) | Executing summary prompts — no new AI backend needed |
+| PI agent (`pi.rs`) | Executing summary prompts â€” no new AI backend needed |
 | `/search` API | Querying memories with time/app/content filters |
 | `standalone-chat.tsx` empty state | Mounting point for pre-chat landing page |
 | `daily-summary.tsx` JSON schema | Output format reference for Day Recap |

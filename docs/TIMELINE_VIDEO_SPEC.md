@@ -1,12 +1,12 @@
-# Timeline Video-Based Frame Loading — Architecture Spec
+﻿# Timeline Video-Based Frame Loading â€” Architecture Spec
 
-<!-- doc-covers: crates/screenpipe-db/src/video_db.rs, crates/screenpipe-core/src/video.rs -->
+<!-- doc-covers: crates/MEMORA-db/src/video_db.rs, crates/MEMORA-core/src/video.rs -->
 <!-- doc-verified: 2c41cccff -->
 > **Current.** Last verified against 2c41cccff (2026-06-19).
 
 > **Status**: Draft  
 > **Issue**: #2165  
-> **Author**: screenpipe team  
+> **Author**: MEMORA team  
 > **Date**: 2026-02-06
 
 ## 1. Problem Statement
@@ -16,16 +16,16 @@
 Every frame displayed in the timeline follows this path:
 
 ```
-User scrolls → frame_id changes → 150ms debounce
-→ HTTP GET /frames/{frame_id}
-→ Server: DB lookup (file_path, offset_index)
-→ ffprobe for video metadata (~200-500ms, cached after first call)
-→ ffmpeg spawns, seeks, extracts single JPEG (~500ms-3s)
-→ writes JPEG to /tmp/screenpipe_frames/
-→ serves file back over HTTP
-→ Browser renders <img>
+User scrolls â†’ frame_id changes â†’ 150ms debounce
+â†’ HTTP GET /frames/{frame_id}
+â†’ Server: DB lookup (file_path, offset_index)
+â†’ ffprobe for video metadata (~200-500ms, cached after first call)
+â†’ ffmpeg spawns, seeks, extracts single JPEG (~500ms-3s)
+â†’ writes JPEG to /tmp/MEMORA_frames/
+â†’ serves file back over HTTP
+â†’ Browser renders <img>
 
-Total: 1.5–4 seconds per frame
+Total: 1.5â€“4 seconds per frame
 ```
 
 On a typical 8-hour workday at 0.5 fps with 2 monitors, the system produces **28,800 frames** across **1,920 video chunks**. Every single frame view spawns a new ffmpeg process.
@@ -46,10 +46,10 @@ From user Menelaus (Discord):
 The bottleneck is **ffmpeg process spawn per frame**. This is fundamentally wrong because:
 
 1. The data already exists in browser-playable format (HEVC/H.265 in fragmented MP4)
-2. Screenpipe uses `-movflags frag_keyframe+empty_moov+default_base_moof`, meaning the moov atom is at the start — **even actively-recording files are seekable**
+2. MEMORA uses `-movflags frag_keyframe+empty_moov+default_base_moof`, meaning the moov atom is at the start â€” **even actively-recording files are seekable**
 3. At 0.5 fps, the GOP structure means most frames are keyframes, so browser seeking is frame-accurate
 4. WebKit on macOS (Tauri's webview) natively supports HEVC
-5. The `file_path` is already sent to the client in WebSocket metadata — it's just not used for display
+5. The `file_path` is already sent to the client in WebSocket metadata â€” it's just not used for display
 
 We're spawning 28,800 ffmpeg processes per day for something the browser can do in hardware with a `video.currentTime` assignment.
 
@@ -70,8 +70,8 @@ We're spawning 28,800 ffmpeg processes per day for something the browser can do 
 
 - Changing the recording format (HEVC stays)
 - Changing the database schema beyond additive fields
-- Supporting browsers without HEVC support in this iteration (Linux/some Windows — they keep ffmpeg fallback)
-- Video playback (play/pause) — this is about still-frame seeking
+- Supporting browsers without HEVC support in this iteration (Linux/some Windows â€” they keep ffmpeg fallback)
+- Video playback (play/pause) â€” this is about still-frame seeking
 - Changing the WebSocket streaming protocol substantially
 
 ## 3. Data Model (Current)
@@ -82,7 +82,7 @@ We're spawning 28,800 ffmpeg processes per day for something the browser can do 
 -- video_chunks: one row per MP4 file
 CREATE TABLE video_chunks (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    file_path TEXT NOT NULL  -- e.g., ~/.screenpipe/data/monitor_1_2026-02-06_10-30-00.mp4
+    file_path TEXT NOT NULL  -- e.g., ~/.MEMORA/data/monitor_1_2026-02-06_10-30-00.mp4
 );
 
 -- frames: one row per captured frame
@@ -101,11 +101,11 @@ CREATE TABLE frames (
 |----------|-------|
 | Codec | HEVC (hvc1) via libx265 |
 | Container | Fragmented MP4 (`frag_keyframe+empty_moov+default_base_moof`) |
-| FPS | Configurable: 0.2–1.0 (default 0.5) |
+| FPS | Configurable: 0.2â€“1.0 (default 0.5) |
 | Chunk duration | 30s (Tauri app) / 60s (CLI) |
 | Frames per chunk | ~15 (at 0.5fps, 30s) |
-| Resolution | Native monitor resolution (e.g., 1920×1080, 3024×1964) |
-| Typical file size | 300KB–1MB per chunk |
+| Resolution | Native monitor resolution (e.g., 1920Ã—1080, 3024Ã—1964) |
+| Typical file size | 300KBâ€“1MB per chunk |
 | Naming | `monitor_{id}_{YYYY-MM-DD_HH-MM-SS}.mp4` |
 
 ### 3.3 Seeking Math
@@ -114,10 +114,10 @@ CREATE TABLE frames (
 currentTime = offset_index / fps
 
 Example at 0.5 fps, 30s chunk (15 frames):
-  offset_index=0  → currentTime = 0s
-  offset_index=1  → currentTime = 2s
-  offset_index=7  → currentTime = 14s
-  offset_index=14 → currentTime = 28s
+  offset_index=0  â†’ currentTime = 0s
+  offset_index=1  â†’ currentTime = 2s
+  offset_index=7  â†’ currentTime = 14s
+  offset_index=14 â†’ currentTime = 28s
 ```
 
 ### 3.4 What the Client Currently Receives (WebSocket)
@@ -130,9 +130,9 @@ interface StreamTimeSeriesResponse {
 
 interface DeviceFrameResponse {
     device_id: string;          // "monitor_1"
-    frame_id: string;           // DB id — used for GET /frames/{id}
+    frame_id: string;           // DB id â€” used for GET /frames/{id}
     metadata: {
-        file_path: string;      // ✅ ALREADY SENT — the MP4 path
+        file_path: string;      // âœ… ALREADY SENT â€” the MP4 path
         app_name: string;
         window_name: string;
         ocr_text: string;
@@ -142,7 +142,7 @@ interface DeviceFrameResponse {
 }
 ```
 
-**Missing from client**: `offset_index` and `fps` — needed for `video.currentTime` calculation.
+**Missing from client**: `offset_index` and `fps` â€” needed for `video.currentTime` calculation.
 
 ### 3.5 Asset Protocol Scope
 
@@ -151,12 +151,12 @@ interface DeviceFrameResponse {
 "security": {
     "assetProtocol": {
         "enable": true,
-        "scope": ["$APPDATA/**"]  // ⚠️ Does NOT include ~/.screenpipe/data/
+        "scope": ["$APPDATA/**"]  // âš ï¸ Does NOT include ~/.MEMORA/data/
     }
 }
 ```
 
-**Problem**: Video files are at `~/.screenpipe/data/`, which is outside `$APPDATA` (`~/Library/Application Support/`). The asset protocol scope must be expanded, or we serve videos through the HTTP server.
+**Problem**: Video files are at `~/.MEMORA/data/`, which is outside `$APPDATA` (`~/Library/Application Support/`). The asset protocol scope must be expanded, or we serve videos through the HTTP server.
 
 ## 4. Proposed Architecture
 
@@ -164,53 +164,53 @@ interface DeviceFrameResponse {
 
 ```
 CURRENT:
-  scroll → frame_id → HTTP GET → ffprobe → ffmpeg → JPEG → <img>
-  Latency: 1.5–4s
+  scroll â†’ frame_id â†’ HTTP GET â†’ ffprobe â†’ ffmpeg â†’ JPEG â†’ <img>
+  Latency: 1.5â€“4s
 
 PROPOSED:
-  scroll → (file_path, offset_index, fps) already in memory
-         → video.currentTime = offset_index / fps
-         → browser hardware-seeks HEVC
-  Latency: 10–50ms (same chunk), 100–300ms (chunk swap)
+  scroll â†’ (file_path, offset_index, fps) already in memory
+         â†’ video.currentTime = offset_index / fps
+         â†’ browser hardware-seeks HEVC
+  Latency: 10â€“50ms (same chunk), 100â€“300ms (chunk swap)
 ```
 
 ### 4.2 Component Diagram
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│                    Timeline UI                           │
-│                                                          │
-│  ┌──────────────┐  ┌──────────────────────────────────┐ │
-│  │ Timeline Bar  │  │ VideoFrameDisplay                │ │
-│  │ (unchanged)   │  │                                  │ │
-│  │               │  │  ┌────────────────────────────┐  │ │
-│  │ Scrolls →     │  │  │ <video> current chunk      │  │ │
-│  │ frame index   │  │  │  .currentTime = offset/fps │  │ │
-│  │               │  │  └────────────────────────────┘  │ │
-│  │               │  │  ┌────────────────────────────┐  │ │
-│  │               │  │  │ <video> preloaded next     │  │ │
-│  │               │  │  │  (hidden, ready to swap)   │  │ │
-│  │               │  │  └────────────────────────────┘  │ │
-│  │               │  │  ┌────────────────────────────┐  │ │
-│  │               │  │  │ <canvas> for OCR overlay   │  │ │
-│  │               │  │  │  (captures video frame)    │  │ │
-│  │               │  │  └────────────────────────────┘  │ │
-│  └──────────────┘  └──────────────────────────────────┘ │
-└─────────────────────────────────────────────────────────┘
-         │                       │
-         │ WebSocket             │ file:// or http://
-         ▼                       ▼
-┌─────────────────┐    ┌──────────────────────┐
-│ Backend Server   │    │ Local filesystem     │
-│ (localhost:3030) │    │ ~/.screenpipe/data/  │
-│                  │    │  monitor_*.mp4       │
-│ Sends metadata:  │    └──────────────────────┘
-│  + file_path     │
-│  + offset_index  │  ← NEW
-│  + fps           │  ← NEW
-│  + chunk_id      │  ← NEW
-│  + frame_id      │
-└──────────────────┘
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚                    Timeline UI                           â”‚
+â”‚                                                          â”‚
+â”‚  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â” â”‚
+â”‚  â”‚ Timeline Bar  â”‚  â”‚ VideoFrameDisplay                â”‚ â”‚
+â”‚  â”‚ (unchanged)   â”‚  â”‚                                  â”‚ â”‚
+â”‚  â”‚               â”‚  â”‚  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”  â”‚ â”‚
+â”‚  â”‚ Scrolls â†’     â”‚  â”‚  â”‚ <video> current chunk      â”‚  â”‚ â”‚
+â”‚  â”‚ frame index   â”‚  â”‚  â”‚  .currentTime = offset/fps â”‚  â”‚ â”‚
+â”‚  â”‚               â”‚  â”‚  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜  â”‚ â”‚
+â”‚  â”‚               â”‚  â”‚  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”  â”‚ â”‚
+â”‚  â”‚               â”‚  â”‚  â”‚ <video> preloaded next     â”‚  â”‚ â”‚
+â”‚  â”‚               â”‚  â”‚  â”‚  (hidden, ready to swap)   â”‚  â”‚ â”‚
+â”‚  â”‚               â”‚  â”‚  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜  â”‚ â”‚
+â”‚  â”‚               â”‚  â”‚  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”  â”‚ â”‚
+â”‚  â”‚               â”‚  â”‚  â”‚ <canvas> for OCR overlay   â”‚  â”‚ â”‚
+â”‚  â”‚               â”‚  â”‚  â”‚  (captures video frame)    â”‚  â”‚ â”‚
+â”‚  â”‚               â”‚  â”‚  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜  â”‚ â”‚
+â”‚  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜ â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+         â”‚                       â”‚
+         â”‚ WebSocket             â”‚ file:// or http://
+         â–¼                       â–¼
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”    â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚ Backend Server   â”‚    â”‚ Local filesystem     â”‚
+â”‚ (localhost:3030) â”‚    â”‚ ~/.MEMORA/data/  â”‚
+â”‚                  â”‚    â”‚  monitor_*.mp4       â”‚
+â”‚ Sends metadata:  â”‚    â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+â”‚  + file_path     â”‚
+â”‚  + offset_index  â”‚  â† NEW
+â”‚  + fps           â”‚  â† NEW
+â”‚  + chunk_id      â”‚  â† NEW
+â”‚  + frame_id      â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 ```
 
 ### 4.3 Video Access Strategy
@@ -218,24 +218,24 @@ PROPOSED:
 **Option A: Expand Tauri asset protocol scope**
 
 ```json
-"scope": ["$APPDATA/**", "$HOME/.screenpipe/**"]
+"scope": ["$APPDATA/**", "$HOME/.MEMORA/**"]
 ```
 
-Then use `convertFileSrc(file_path)` → `asset://localhost/...` URL.
+Then use `convertFileSrc(file_path)` â†’ `asset://localhost/...` URL.
 
-- ✅ Zero HTTP overhead
-- ✅ Uses native file streaming with range requests
-- ⚠️ Need to handle custom `dataDir` setting (user can change data location)
-- ⚠️ Must dynamically add paths via `scope.allow_file()` for custom dirs
+- âœ… Zero HTTP overhead
+- âœ… Uses native file streaming with range requests
+- âš ï¸ Need to handle custom `dataDir` setting (user can change data location)
+- âš ï¸ Must dynamically add paths via `scope.allow_file()` for custom dirs
 
 **Option B: New HTTP endpoint `/video/chunk/{chunk_id}`**
 
 Serve the raw MP4 file via the existing HTTP server with Range request support.
 
-- ✅ No scope config changes needed
-- ✅ Works for any data dir location
-- ⚠️ HTTP overhead (minimal for local connections)
-- ⚠️ Must support Range headers for seeking
+- âœ… No scope config changes needed
+- âœ… Works for any data dir location
+- âš ï¸ HTTP overhead (minimal for local connections)
+- âš ï¸ Must support Range headers for seeking
 
 **Recommendation**: Option A (asset protocol) as primary, Option B as fallback for custom data dirs. Both should be implemented since the `<video>` element just needs a URL.
 
@@ -246,7 +246,7 @@ Serve the raw MP4 file via the existing HTTP server with Range request support.
 #### 5.1.1 Add `offset_index` and `fps` to WebSocket Response
 
 ```rust
-// server.rs — DeviceFrameResponse
+// server.rs â€” DeviceFrameResponse
 pub struct DeviceFrameResponse {
     pub device_id: String,
     pub frame_id: i64,
@@ -259,7 +259,7 @@ pub struct DeviceFrameResponse {
 
 The `offset_index` already exists in `FrameData` from the DB query. The `fps` can be:
 - Read from the video file via the existing metadata cache (`get_video_fps_and_duration`)
-- Or stored in a new `video_chunks.fps` column (better — avoids ffprobe entirely)
+- Or stored in a new `video_chunks.fps` column (better â€” avoids ffprobe entirely)
 
 **Preferred**: Add `fps REAL` column to `video_chunks` table, populate at chunk creation time (we know the fps when starting ffmpeg). Then the WebSocket response includes it from the DB query with zero extra cost.
 
@@ -273,7 +273,7 @@ ALTER TABLE video_chunks ADD COLUMN fps REAL DEFAULT 0.5;
 Populate for existing data:
 ```sql
 -- Backfill: use global default. Users who changed fps mid-session may have
--- some chunks with wrong fps, but seeking will be close enough (±1 frame).
+-- some chunks with wrong fps, but seeking will be close enough (Â±1 frame).
 UPDATE video_chunks SET fps = 0.5 WHERE fps IS NULL OR fps = 0;
 ```
 
@@ -295,7 +295,7 @@ For serving video files with proper Range request support:
 async fn stream_video_file(
     Path(path): Path<String>,
 ) -> impl IntoResponse {
-    // Validate path is under screenpipe data dir (security)
+    // Validate path is under MEMORA data dir (security)
     // Serve file with Accept-Ranges, Content-Range headers
     // This enables the <video> element to seek efficiently
 }
@@ -310,7 +310,7 @@ Don't remove the existing endpoint. It serves as:
 - Fallback for corrupt video files where `<video>` fails
 - Export functionality that needs JPEG frames
 
-Note: frame images are redacted at rest by the image-PII worker (rfdetr →
+Note: frame images are redacted at rest by the image-PII worker (rfdetr â†’
 black boxes); there is no per-request `?redact_pii` query param.
 
 ### 5.2 Frontend Changes
@@ -365,7 +365,7 @@ interface VideoPool {
 ```
 
 When crossing a chunk boundary:
-1. Swap active ↔ preloaded (instant — element already has data)
+1. Swap active â†” preloaded (instant â€” element already has data)
 2. Start loading the NEW adjacent chunk into the now-freed preloaded slot
 3. Previous chunk's `<video>` gets its `src` cleared to free memory
 
@@ -374,9 +374,9 @@ When crossing a chunk boundary:
 When displaying a frame, preload chunks in this priority order:
 1. **Next chronological chunk** (if scrolling forward / at live edge)
 2. **Previous chronological chunk** (if scrolling backward)
-3. Only preload if the adjacent chunk is ≤ 2 chunks away (don't preload 50 chunks)
+3. Only preload if the adjacent chunk is â‰¤ 2 chunks away (don't preload 50 chunks)
 
-The preloading is passive — just set `<video src="...">` with `preload="auto"`. The browser handles buffering.
+The preloading is passive â€” just set `<video src="...">` with `preload="auto"`. The browser handles buffering.
 
 #### 5.2.4 Chunk-to-URL Mapping
 
@@ -406,7 +406,7 @@ const handleVideoError = useCallback(() => {
 }, [frameId]);
 ```
 
-Per-chunk error tracking — if a chunk fails, mark it so we don't keep retrying:
+Per-chunk error tracking â€” if a chunk fails, mark it so we don't keep retrying:
 ```typescript
 const failedChunks = useRef(new Set<string>());
 ```
@@ -420,17 +420,17 @@ Currently, OCR text positions are fetched by `frame_id` and overlaid on the `<im
 - `naturalDimensions` come from `video.videoWidth` / `video.videoHeight` instead of `img.naturalWidth`
 - Text selection works the same way (overlay divs positioned over the video)
 
-**No change needed for OCR overlay** — it's already independent of the image source.
+**No change needed for OCR overlay** â€” it's already independent of the image source.
 
 #### 5.2.7 Timeline Store Changes
 
 The `useTimelineStore` needs to:
 1. Build a chunk index from incoming frames (group frames by `file_path`)
 2. Track which chunk is currently loaded in each `<video>` element
-3. Provide `getChunkForFrame(frameIndex)` → `{ filePath, fps, offsetIndex }`
+3. Provide `getChunkForFrame(frameIndex)` â†’ `{ filePath, fps, offsetIndex }`
 
 ```typescript
-// Derived from frames array — computed on each flush
+// Derived from frames array â€” computed on each flush
 interface ChunkIndex {
     // Ordered list of unique chunks with their time ranges
     chunks: Array<{
@@ -441,7 +441,7 @@ interface ChunkIndex {
         frameIds: number[];      // frames in this chunk
         offsetIndices: number[];  // corresponding offsets
     }>;
-    // Quick lookup: frameId → chunk index
+    // Quick lookup: frameId â†’ chunk index
     frameToChunk: Map<string, number>;
 }
 ```
@@ -450,16 +450,16 @@ interface ChunkIndex {
 
 | Component | Change | Backwards Compatible? |
 |-----------|--------|-----------------------|
-| `DeviceFrameResponse` | Add `offset_index`, `fps` fields | ✅ Additive JSON fields |
-| `video_chunks` table | Add `fps` column with DEFAULT | ✅ Existing rows get default |
-| `CurrentFrameTimeline` | Replace internals, keep props | ✅ Same component API |
-| `/frames/{frame_id}` endpoint | Keep as-is | ✅ No change |
-| Asset protocol scope | Expand | ✅ Only grants more access |
-| `use-timeline-store` | Add chunk index | ✅ Internal refactor |
+| `DeviceFrameResponse` | Add `offset_index`, `fps` fields | âœ… Additive JSON fields |
+| `video_chunks` table | Add `fps` column with DEFAULT | âœ… Existing rows get default |
+| `CurrentFrameTimeline` | Replace internals, keep props | âœ… Same component API |
+| `/frames/{frame_id}` endpoint | Keep as-is | âœ… No change |
+| Asset protocol scope | Expand | âœ… Only grants more access |
+| `use-timeline-store` | Add chunk index | âœ… Internal refactor |
 
-## 6. Edge Cases — Complete Catalog
+## 6. Edge Cases â€” Complete Catalog
 
-### 6.1 Same-Chunk Navigation (Most Common — 80% of scrolling)
+### 6.1 Same-Chunk Navigation (Most Common â€” 80% of scrolling)
 
 **Scenario**: User scrolls through frames that all belong to the same 30-second video chunk.
 
@@ -468,8 +468,8 @@ interface ChunkIndex {
 | Seek within loaded chunk | `video.currentTime = offset/fps` | 10-50ms, hardware accelerated |
 | Rapid scrolling (30+ frames/sec) | Many `currentTime` assignments | Debounce 80ms. Browser coalesces seeks. Only last seek matters. |
 | Seek to exact same frame | `currentTime` unchanged | Skip seek (delta < 0.001) |
-| Frame at offset_index=0 | `currentTime = 0` | Works — video is at start |
-| Frame at last offset in chunk | `currentTime = 28s` (for 30s chunk at 0.5fps) | Works — within duration |
+| Frame at offset_index=0 | `currentTime = 0` | Works â€” video is at start |
+| Frame at last offset in chunk | `currentTime = 28s` (for 30s chunk at 0.5fps) | Works â€” within duration |
 | `seeked` event fires before paint | Frame not visually updated yet | Use `requestAnimationFrame` after `seeked` to confirm paint |
 | Video element not yet loaded | `loadeddata` hasn't fired | Queue seek, execute after `loadeddata` |
 
@@ -479,10 +479,10 @@ interface ChunkIndex {
 
 | Edge Case | What Happens | Handling |
 |-----------|-------------|----------|
-| Next chunk is preloaded | Swap active ↔ preloaded, seek | <100ms — swap is instant, seek is instant |
+| Next chunk is preloaded | Swap active â†” preloaded, seek | <100ms â€” swap is instant, seek is instant |
 | Next chunk NOT preloaded | Must load new video file | Show last frame of old chunk (hold), start loading new chunk. Display new frame on `seeked`. Worst case: 200-500ms for local file. |
 | Preloaded chunk is WRONG (user changed direction) | Preloaded is next but user went prev | Evict preloaded, load correct chunk. Latency: 200-500ms. Update preload heuristic. |
-| Two chunks with different fps | Old chunk 0.5fps, new chunk 0.2fps | Each `<video>` uses its own fps. No issue — fps travels with chunk metadata. |
+| Two chunks with different fps | Old chunk 0.5fps, new chunk 0.2fps | Each `<video>` uses its own fps. No issue â€” fps travels with chunk metadata. |
 | Chunk file was deleted (user cleared old data) | `<video>` fires `error` event | Fall back to ffmpeg path for this frame. Mark chunk as failed. |
 | Gap between chunks (recording stopped briefly) | No frames for 5 minutes, then next chunk | Timeline already handles gaps (no frame to display). Next scrollable frame jumps to new chunk. |
 | Two monitors' chunks cross boundaries at different times | Monitor 1 chunk changes at :30, monitor 2 at :45 | Each monitor has its own video pool. Independent chunk tracking. |
@@ -508,10 +508,10 @@ interface ChunkIndex {
 |-----------|-------------|----------|
 | New frame in same chunk | Poll detects new frame, same file_path, higher offset_index | Seek to new offset. Fragmented MP4 = browser can read new fragments. May need to trigger video reload (`video.load()`) to pick up new data. |
 | Chunk rotation while viewing | Encoder finishes chunk A, starts chunk B. New frames have new file_path. | Swap to chunk B's video element. Chunk A remains valid (finalized). |
-| Chunk A finalized AFTER we loaded it as "active" | Video was loaded when A was incomplete. Now it's complete with moov finalized. | No issue — fragmented MP4 has moov at start. Browser already has all the data it needs. |
+| Chunk A finalized AFTER we loaded it as "active" | Video was loaded when A was incomplete. Now it's complete with moov finalized. | No issue â€” fragmented MP4 has moov at start. Browser already has all the data it needs. |
 | Very recent frame not yet on disk | Frame captured but ffmpeg hasn't written it yet | offset_index points to a frame that doesn't exist in the file yet. Browser seek silently goes to nearest frame. WebSocket only sends frames AFTER they're written to video (via `FrameWriteTracker`). |
 | Live edge with 2-second frame interval (0.5fps) | User sees 2-second-old data | This is inherent to the capture rate. Not a video-loading issue. |
-| Screenpipe process restarts while viewing | Video connection lost, new chunks start | WebSocket reconnection already handles this. Video pool resets on reconnect. |
+| MEMORA process restarts while viewing | Video connection lost, new chunks start | WebSocket reconnection already handles this. Video pool resets on reconnect. |
 
 ### 6.5 Multi-Monitor
 
@@ -523,7 +523,7 @@ interface ChunkIndex {
 | Switch from monitor 1 to monitor 2 view | Need different file_path | Load monitor 2's chunk. Keep monitor 1's video in pool (may switch back). |
 | Monitor disconnected mid-day | Frames stop for that monitor_id | Timeline shows gap. No video to load. Existing behavior. |
 | 3 monitors, all visible (side by side) | 3 active video elements + 3 preloaded = 6 total | 6 video elements is fine for browser. ~6MB memory. |
-| Monitors have different resolutions | Monitor 1: 3024×1964, Monitor 2: 1920×1080 | Each `<video>` element has its own natural dimensions. OCR overlay scales independently. |
+| Monitors have different resolutions | Monitor 1: 3024Ã—1964, Monitor 2: 1920Ã—1080 | Each `<video>` element has its own natural dimensions. OCR overlay scales independently. |
 | Monitors have different fps (adaptive fps) | Monitor 1: 0.5fps, Monitor 2: 0.2fps | fps is per-chunk, stored in metadata. Each video pool uses its own fps for seeking. |
 
 ### 6.6 Error Handling & Corruption
@@ -534,7 +534,7 @@ interface ChunkIndex {
 | Video file exists but has 0 bytes | `<video>` fires `error` event | Same as corrupt. Already handled server-side (`VIDEO_CORRUPTED: empty file`). |
 | Permission denied on video file | `<video>` fires `error` event | Same as corrupt. Log the specific error for debugging. |
 | HEVC not supported (Linux, some Windows) | `<video>` fires `error` event immediately or shows green frames | Detect on first video load. If error within 500ms of first load, set `useVideoElement = false` globally. Fall back to ffmpeg `<img>` path for all frames on this session. |
-| Browser out of memory (too many videos) | Memory pressure, tab crash | Limit total video elements to 6 (3 monitors × 2). Eagerly revoke old blob URLs. Use `video.src = ""` to unload unused videos. |
+| Browser out of memory (too many videos) | Memory pressure, tab crash | Limit total video elements to 6 (3 monitors Ã— 2). Eagerly revoke old blob URLs. Use `video.src = ""` to unload unused videos. |
 | Network error on HTTP video endpoint | `<video>` fires `error` with network type | Retry once after 500ms. Then fall back to ffmpeg path. |
 
 ### 6.7 User Settings & Configurations
@@ -545,7 +545,7 @@ interface ChunkIndex {
 | FPS changed mid-day | Chunks before change: 0.5fps, after: 0.2fps | Each chunk carries its own fps in metadata. Seeking uses per-chunk fps. |
 | Video quality changed | Different CRF values in different chunks | Transparent to `<video>` element. No impact on seeking. |
 | frame_cache enabled (server-side) | Server has precomputed JPEGs in cache | The WebSocket path (metadata only) doesn't use frame_cache. The `/frames/{id}` fallback benefits from cache. No conflict. |
-| Adaptive FPS enabled | FPS varies per chunk | Same as "FPS changed mid-day" — per-chunk fps handles this. |
+| Adaptive FPS enabled | FPS varies per chunk | Same as "FPS changed mid-day" â€” per-chunk fps handles this. |
 
 ### 6.8 UI/UX Details
 
@@ -562,9 +562,9 @@ interface ChunkIndex {
 
 | Edge Case | What Happens | Handling |
 |-----------|-------------|----------|
-| OCR overlay on `<video>` instead of `<img>` | Overlay divs positioned over video | No change — overlay uses percentage-based positioning relative to container. `videoWidth`/`videoHeight` replace `naturalWidth`/`naturalHeight`. |
+| OCR overlay on `<video>` instead of `<img>` | Overlay divs positioned over video | No change â€” overlay uses percentage-based positioning relative to container. `videoWidth`/`videoHeight` replace `naturalWidth`/`naturalHeight`. |
 | Text selection across video frame change | User selecting text, then frame changes | Selection clears on frame change (existing behavior). |
-| URL detection timing | OCR data arrives after video frame is displayed | This already happens today — OCR loads async. No change needed. |
+| URL detection timing | OCR data arrives after video frame is displayed | This already happens today â€” OCR loads async. No change needed. |
 
 ## 7. Testing Plan
 
@@ -572,11 +572,11 @@ interface ChunkIndex {
 
 | Test | What to Verify |
 |------|----------------|
-| Seek accuracy | `video.currentTime = offset/fps` → `seeked` event → `video.currentTime` matches expected ±0.1s |
+| Seek accuracy | `video.currentTime = offset/fps` â†’ `seeked` event â†’ `video.currentTime` matches expected Â±0.1s |
 | Chunk transition | Load video A, seek to end; load video B, seek to start. Verify <300ms total transition. |
-| Error fallback | Serve corrupt video → verify fallback to ffmpeg `<img>` path within 1s |
-| Memory management | Load/unload 50 chunks sequentially → verify memory doesn't grow unbounded |
-| Multi-monitor | 3 video elements seeking simultaneously → no race conditions |
+| Error fallback | Serve corrupt video â†’ verify fallback to ffmpeg `<img>` path within 1s |
+| Memory management | Load/unload 50 chunks sequentially â†’ verify memory doesn't grow unbounded |
+| Multi-monitor | 3 video elements seeking simultaneously â†’ no race conditions |
 
 ### 7.2 Manual Test Scenarios
 
@@ -596,9 +596,9 @@ interface ChunkIndex {
 
 | Metric | Current | Target | How to Measure |
 |--------|---------|--------|----------------|
-| Same-chunk seek latency | 1.5–4s | <100ms | `performance.now()` between `currentTime` set and `seeked` event |
-| Cross-chunk seek latency | 1.5–4s | <500ms | Same, but includes `loadeddata` event for new source |
-| Day-jump latency | 3–8s | <1s | Time from date click to first frame painted |
+| Same-chunk seek latency | 1.5â€“4s | <100ms | `performance.now()` between `currentTime` set and `seeked` event |
+| Cross-chunk seek latency | 1.5â€“4s | <500ms | Same, but includes `loadeddata` event for new source |
+| Day-jump latency | 3â€“8s | <1s | Time from date click to first frame painted |
 | ffmpeg processes spawned per scroll session | ~50 | 0 | Count process spawns in server logs |
 | Memory per video element | N/A | <5MB | Browser DevTools memory snapshot |
 | PostHog `timeline_frame_load_time` P95 | ~3000ms | <200ms | PostHog dashboard |
@@ -617,7 +617,7 @@ interface ChunkIndex {
 
 - [ ] Create `VideoFrameDisplay` component with `<video>` seeking
 - [ ] Implement double-buffer pool (active + preloaded)
-- [ ] Expand asset protocol scope for `~/.screenpipe/data/`
+- [ ] Expand asset protocol scope for `~/.MEMORA/data/`
 - [ ] Handle `seeked` event for frame-ready signaling
 - [ ] Add ffmpeg `<img>` fallback on `<video>` error
 - [ ] Wire up to existing `CurrentFrameTimeline` props
@@ -626,14 +626,14 @@ interface ChunkIndex {
 
 - [ ] Build chunk index from WebSocket frame stream
 - [ ] Implement preloading logic (adjacent chunks)
-- [ ] Handle chunk transitions (swap active ↔ preloaded)
+- [ ] Handle chunk transitions (swap active â†” preloaded)
 - [ ] Memory management (evict old video elements)
 - [ ] Live edge chunk rotation handling
 
 ### Phase 4: Polish & Edge Cases (1 day)
 
 - [ ] OCR overlay with `<video>` dimensions
-- [ ] Platform detection → HEVC fallback for Linux
+- [ ] Platform detection â†’ HEVC fallback for Linux
 - [ ] Custom data directory support
 - [ ] PostHog metrics (seek latency, chunk load time, fallback rate)
 - [ ] Cleanup: remove ffmpeg frame extraction from hot path (keep as fallback)

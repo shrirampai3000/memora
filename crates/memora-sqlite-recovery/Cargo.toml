@@ -1,0 +1,18 @@
+﻿[package]
+name = "memora-sqlite-recovery"
+version.workspace = true
+authors.workspace = true
+description = "Self-contained SQLite page-level recovery for MEMORA"
+repository.workspace = true
+license.workspace = true
+edition.workspace = true
+
+[dependencies]
+libsqlite3-sys = { workspace = true }
+
+[build-dependencies]
+cc = { workspace = true }
+
+[dev-dependencies]
+rusqlite = { version = "=0.39.0", features = ["bundled"] }
+tempfile = { workspace = true }

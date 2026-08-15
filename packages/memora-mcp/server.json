@@ -1,0 +1,23 @@
+﻿{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.MEMORA/MEMORA-mcp",
+  "title": "MEMORA",
+  "description": "Search your local screen recordings, audio transcripts, and computer activity from MEMORA.",
+  "repository": {
+    "url": "https://github.com/MEMORA/MEMORA",
+    "source": "github",
+    "subfolder": "packages/MEMORA-mcp"
+  },
+  "version": "0.19.1",
+  "packages": [
+    {
+      "registryType": "npm",
+      "registryBaseUrl": "https://registry.npmjs.org",
+      "identifier": "MEMORA-mcp",
+      "version": "0.19.1",
+      "transport": {
+        "type": "stdio"
+      }
+    }
+  ]
+}

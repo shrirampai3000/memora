@@ -1,8 +1,8 @@
-# Event-Driven Capture — Architecture Spec
+﻿# Event-Driven Capture â€” Architecture Spec
 
-<!-- doc-covers: crates/screenpipe-engine/src/event_driven_capture.rs -->
+<!-- doc-covers: crates/MEMORA-engine/src/event_driven_capture.rs -->
 <!-- doc-verified: 8c70b4b18 -->
-> **Historical.** Last verified against 8c70b4b18 (2026-02-20). `crates/screenpipe-engine/src/event_driven_capture.rs` has moved a long way
+> **Historical.** Last verified against 8c70b4b18 (2026-02-20). `crates/MEMORA-engine/src/event_driven_capture.rs` has moved a long way
 > since; read this for original intent only. Names, signatures, and thresholds are
 > probably wrong. The code wins. Run `bun scripts/check-doc-freshness.ts` for current drift.
 
@@ -13,27 +13,27 @@
 
 Three independent capture systems run on their own clocks with zero synchronization:
 
-- **Vision**: polls at 0.5–10 FPS, compares frames, runs OCR, encodes H.265 video
+- **Vision**: polls at 0.5â€“10 FPS, compares frames, runs OCR, encodes H.265 video
 - **Accessibility tree walker**: walks every 3s or on app switch, stores text separately
 - **UI event recorder**: real-time input capture, stored in its own table
 
 When a user searches a keyword that exists in accessibility data, the nearest screenshot is from a different moment. The thumbnail is wrong. The user doesn't trust the results.
 
-Meanwhile the vision pipeline burns CPU comparing and skipping identical frames on a static screen. The `ActivityFeed` already detects every click, keystroke, and app switch — but instead of triggering a capture, it nudges a polling rate. That's backwards.
+Meanwhile the vision pipeline burns CPU comparing and skipping identical frames on a static screen. The `ActivityFeed` already detects every click, keystroke, and app switch â€” but instead of triggering a capture, it nudges a polling rate. That's backwards.
 
 ## 2. Design
 
 ### 2.1 One Capture System
 
-Kill the three-system split. One system: **event happens → screenshot + text extraction → store together**.
+Kill the three-system split. One system: **event happens â†’ screenshot + text extraction â†’ store together**.
 
 ```
 Event (click / app switch / typing pause / scroll stop / idle timer)
-  → Screenshot (reuse capture_monitor_image)
-  → Accessibility tree walk (reuse walk_focused_window)
-  → If accessibility empty → OCR fallback (reuse process_ocr_task)
-  → Write JPEG to disk
-  → Insert frame + text into DB (single row, single timestamp)
+  â†’ Screenshot (reuse capture_monitor_image)
+  â†’ Accessibility tree walk (reuse walk_focused_window)
+  â†’ If accessibility empty â†’ OCR fallback (reuse process_ocr_task)
+  â†’ Write JPEG to disk
+  â†’ Insert frame + text into DB (single row, single timestamp)
 ```
 
 Screenshot and text share the same timestamp because they come from the same capture. No desync possible.
@@ -42,26 +42,26 @@ Screenshot and text share the same timestamp because they come from the same cap
 
 | Trigger | Debounce | Why |
 |---------|----------|-----|
-| App switch | 300ms settle | Highest-value event — user changed context |
+| App switch | 300ms settle | Highest-value event â€” user changed context |
 | Window focus change | 300ms settle | New tab, new document, new conversation |
-| Mouse click | 200ms | User interacted — screen likely changed |
+| Mouse click | 200ms | User interacted â€” screen likely changed |
 | Typing pause | 500ms after last key | Capture the result of typing, not every character |
 | Scroll stop | 400ms after last scroll | New content scrolled into view |
-| Clipboard copy | 200ms | User grabbed something — capture context |
+| Clipboard copy | 200ms | User grabbed something â€” capture context |
 | **Idle fallback** | **Every 5s** | Catch passive changes: notifications, incoming messages, auto-play |
 
 **Hard constraints**:
-- **Minimum interval**: 200ms between captures per monitor. Non-negotiable — prevents storms.
+- **Minimum interval**: 200ms between captures per monitor. Non-negotiable â€” prevents storms.
 - **Maximum gap**: 10s. If nothing triggers a capture for 10s, take one anyway. Identical consecutive idle frames are deduplicated via frame hash comparison (already exists in `FrameComparer`).
 
 ### 2.3 Text Extraction
 
-Accessibility first. OCR as fallback. No "both" mode at capture time — keep it simple.
+Accessibility first. OCR as fallback. No "both" mode at capture time â€” keep it simple.
 
 ```
-walk_focused_window() → result
-  if result.text_content is non-empty → done (text_source = "accessibility")
-  if result is empty/error → run OCR → done (text_source = "ocr")
+walk_focused_window() â†’ result
+  if result.text_content is non-empty â†’ done (text_source = "accessibility")
+  if result is empty/error â†’ run OCR â†’ done (text_source = "ocr")
 ```
 
 Accessibility tree walk has a **200ms hard timeout**. If the app has a massive AX tree (Electron apps with 10k+ nodes), we take whatever text we got in 200ms and move on. This keeps capture latency predictable.
@@ -81,7 +81,7 @@ No more H.265 video encoding. No more FFmpeg for frame extraction.
 Each capture writes a JPEG directly to disk:
 
 ```
-~/.screenpipe/data/
+~/.MEMORA/data/
   2026-02-20/
     1708423935123_m0.jpg     # monitor 0 screenshot
     1708423937456_m0.jpg
@@ -97,13 +97,13 @@ Metadata (text, app name, trigger, etc.) lives in the DB, not sidecar files. The
 3. FFmpeg is a 100MB+ dependency we can stop depending on for the hot path.
 4. JPEG files are directly servable. Zero processing to display.
 
-**Storage math** (8 hours active use, 1080p, JPEG quality 80 ≈ 80KB/frame):
-- Today (0.5-1 FPS continuous): 14,400–28,800 frames → 1.1–2.3 GB (H.265 compressed ≈ 100-200 MB/hr × 8hr)
-- Event-driven (~10 captures/min active, 6/min idle, 50/50 split): ~3,840 frames → ~300 MB total
+**Storage math** (8 hours active use, 1080p, JPEG quality 80 â‰ˆ 80KB/frame):
+- Today (0.5-1 FPS continuous): 14,400â€“28,800 frames â†’ 1.1â€“2.3 GB (H.265 compressed â‰ˆ 100-200 MB/hr Ã— 8hr)
+- Event-driven (~10 captures/min active, 6/min idle, 50/50 split): ~3,840 frames â†’ ~300 MB total
 
 Fewer frames, each slightly larger, far less total storage.
 
-**Reading old data**: Legacy video-chunk frames stay on disk forever. The frame retrieval endpoint checks `snapshot_path` on the frame row — if set, serve JPEG directly; if NULL, use the existing FFmpeg extraction path. Old data keeps working with zero migration effort.
+**Reading old data**: Legacy video-chunk frames stay on disk forever. The frame retrieval endpoint checks `snapshot_path` on the frame row â€” if set, serve JPEG directly; if NULL, use the existing FFmpeg extraction path. Old data keeps working with zero migration effort.
 
 ### 2.5 Database Changes
 
@@ -145,43 +145,43 @@ Results are merged, deduplicated by frame ID, sorted by timestamp. Thumbnails ar
 ### 2.7 Multi-Monitor
 
 Events are monitor-specific where possible:
-- Click/scroll → capture the monitor where the cursor is
-- App switch → capture the monitor with the newly focused window
-- Typing pause → capture the monitor with the focused window
+- Click/scroll â†’ capture the monitor where the cursor is
+- App switch â†’ capture the monitor with the newly focused window
+- Typing pause â†’ capture the monitor with the focused window
 
 Other monitors get idle fallback captures only (every 5s, deduplicated).
 
-This avoids capturing all monitors on every click — important for 3+ monitor setups.
+This avoids capturing all monitors on every click â€” important for 3+ monitor setups.
 
 ### 2.8 Concurrency Model
 
 ```
-                    ┌─────────────────────┐
-                    │  Event Listener      │  (reuse existing CGEventTap / UI Automation)
-                    │  (real-time thread)  │
-                    └─────────┬───────────┘
-                              │ EventTrigger (type + monitor + timestamp)
-                              ▼
-                    ┌─────────────────────┐
-                    │  Debounce + Dedup    │  (per-monitor, 200ms min interval)
-                    │  (async task)        │
-                    └─────────┬───────────┘
-                              │ qualified trigger
-                              ▼
-              ┌───────────────────────────────┐
-              │  Capture Worker (per monitor)  │
-              │  1. capture_monitor_image()    │  ~5ms
-              │  2. capture_windows()          │  ~10ms
-              │  3. walk_focused_window()      │  ~10-200ms (200ms timeout)
-              │  4. if empty → process_ocr()   │  ~100-500ms (rare)
-              │  5. encode JPEG, write to disk  │  ~5-10ms
-              │  6. insert frame + text to DB   │  ~5ms (batched)
-              └───────────────────────────────┘
+                    â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+                    â”‚  Event Listener      â”‚  (reuse existing CGEventTap / UI Automation)
+                    â”‚  (real-time thread)  â”‚
+                    â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+                              â”‚ EventTrigger (type + monitor + timestamp)
+                              â–¼
+                    â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+                    â”‚  Debounce + Dedup    â”‚  (per-monitor, 200ms min interval)
+                    â”‚  (async task)        â”‚
+                    â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+                              â”‚ qualified trigger
+                              â–¼
+              â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+              â”‚  Capture Worker (per monitor)  â”‚
+              â”‚  1. capture_monitor_image()    â”‚  ~5ms
+              â”‚  2. capture_windows()          â”‚  ~10ms
+              â”‚  3. walk_focused_window()      â”‚  ~10-200ms (200ms timeout)
+              â”‚  4. if empty â†’ process_ocr()   â”‚  ~100-500ms (rare)
+              â”‚  5. encode JPEG, write to disk  â”‚  ~5-10ms
+              â”‚  6. insert frame + text to DB   â”‚  ~5ms (batched)
+              â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 ```
 
 Total latency per capture: ~30-50ms typical (accessibility path), ~200-600ms worst case (OCR fallback). Well within the 200ms minimum interval.
 
-One capture worker per monitor. Workers are independent — a slow OCR on monitor 1 doesn't block capture on monitor 2.
+One capture worker per monitor. Workers are independent â€” a slow OCR on monitor 1 doesn't block capture on monitor 2.
 
 ### 2.9 Settings
 
@@ -191,11 +191,11 @@ Remove:
 - Video quality presets (no video encoding)
 
 Add:
-- **Capture sensitivity** — Low / Medium / High
+- **Capture sensitivity** â€” Low / Medium / High
   - Low: 500ms debounce, 10s idle gap (laptop battery mode)
   - Medium: 200ms debounce, 5s idle gap (default)
   - High: 100ms debounce, 3s idle gap (maximum recall)
-- **JPEG quality** — slider, 60-95%, default 80%
+- **JPEG quality** â€” slider, 60-95%, default 80%
 
 Keep:
 - Monitor selection (which monitors to capture)
@@ -219,9 +219,9 @@ This is not additive. Old code gets removed.
 | `WindowOcrCache` (300s TTL, 100 entries) | Accessibility is fast enough to not need caching. OCR fallback is rare. |
 
 **What stays for backward compat (read path only)**:
-- `extract_frame_from_video()` — for displaying old video-chunk frames
-- `video_chunks` table — for old data
-- `offset_index` / `fps` columns on frames — for old data
+- `extract_frame_from_video()` â€” for displaying old video-chunk frames
+- `video_chunks` table â€” for old data
+- `offset_index` / `fps` columns on frames â€” for old data
 
 These remain but receive no new writes. They're read-only legacy support.
 
@@ -231,7 +231,7 @@ Not phased. One PR per step, each shippable independently, but all ship in the s
 
 ### Step 1: DB migration + snapshot write path
 - Add new columns to `frames`
-- `SnapshotWriter`: JPEG write to `~/.screenpipe/data/YYYY-MM-DD/`
+- `SnapshotWriter`: JPEG write to `~/.MEMORA/data/YYYY-MM-DD/`
 - `insert_snapshot_frame()` in DB
 - Update `get_frame_data()` to serve snapshots directly
 
@@ -242,13 +242,13 @@ Not phased. One PR per step, each shippable independently, but all ship in the s
 
 ### Step 3: Event trigger system
 - Extend `ActivityFeed` with `tokio::sync::Notify` + event type
-- `EventDrivenCapture::wait_for_trigger()` — debounce + dedup logic
+- `EventDrivenCapture::wait_for_trigger()` â€” debounce + dedup logic
 - Idle fallback timer
 - Wire into existing `CGEventTap` / UI Automation hooks
 
 ### Step 4: New capture loop
 - Replace `VisionManager`'s capture task with event-driven loop
-- One worker per monitor: `wait_for_trigger → paired_capture → snapshot_write → db_insert`
+- One worker per monitor: `wait_for_trigger â†’ paired_capture â†’ snapshot_write â†’ db_insert`
 - Delete `continuous_capture()`, `save_frames_as_video()`, `FrameWriteTracker`
 - Delete adaptive FPS, `get_capture_params()`
 
@@ -265,41 +265,41 @@ Not phased. One PR per step, each shippable independently, but all ship in the s
 ## 5. Testing Checklist
 
 ### Capture correctness
-- [ ] App switch → capture within 500ms, correct app/window in metadata
-- [ ] Click → capture within 400ms, screenshot reflects post-click state
-- [ ] Typing 3 words, stop → capture within 1s of last keystroke
-- [ ] Scroll through long page, stop → capture shows final scroll position
-- [ ] Copy text → capture within 400ms
-- [ ] Sit idle 10s → idle capture fires, identical consecutive frames deduplicated
-- [ ] Rapid clicking (10 clicks in 1s) → at most 5 captures (200ms min interval)
-- [ ] 3 monitors → events only capture affected monitor, others get idle captures
+- [ ] App switch â†’ capture within 500ms, correct app/window in metadata
+- [ ] Click â†’ capture within 400ms, screenshot reflects post-click state
+- [ ] Typing 3 words, stop â†’ capture within 1s of last keystroke
+- [ ] Scroll through long page, stop â†’ capture shows final scroll position
+- [ ] Copy text â†’ capture within 400ms
+- [ ] Sit idle 10s â†’ idle capture fires, identical consecutive frames deduplicated
+- [ ] Rapid clicking (10 clicks in 1s) â†’ at most 5 captures (200ms min interval)
+- [ ] 3 monitors â†’ events only capture affected monitor, others get idle captures
 
 ### Text extraction
 - [ ] Chrome: accessibility returns page text, window title, URL
 - [ ] VS Code: accessibility returns visible code
 - [ ] Finder: accessibility returns file names
-- [ ] Figma/Photoshop: accessibility empty → OCR fallback activates
+- [ ] Figma/Photoshop: accessibility empty â†’ OCR fallback activates
 - [ ] Electron app with huge DOM: tree walk returns partial text within 200ms timeout
 
 ### Storage
 - [ ] Snapshots written as valid JPEG, correct resolution, readable by Preview/Photos
-- [ ] Directory `~/.screenpipe/data/YYYY-MM-DD/` created automatically
+- [ ] Directory `~/.MEMORA/data/YYYY-MM-DD/` created automatically
 - [ ] Frame retrieval: snapshot frames served in <5ms (no FFmpeg)
 - [ ] Frame retrieval: old video-chunk frames still served correctly via FFmpeg
 - [ ] Disk cleanup deletes oldest snapshots when retention limit hit
 
 ### Search
-- [ ] Keyword in accessibility text → correct thumbnail (no desync)
-- [ ] Keyword in OCR text (fallback frames) → correct thumbnail
-- [ ] Keyword in old OCR data (pre-migration) → still works
+- [ ] Keyword in accessibility text â†’ correct thumbnail (no desync)
+- [ ] Keyword in OCR text (fallback frames) â†’ correct thumbnail
+- [ ] Keyword in old OCR data (pre-migration) â†’ still works
 - [ ] Mixed results (old video frames + new snapshots) display correctly
 
 ### Regression (from TESTING.md)
-- [ ] Section 3: Monitor plug/unplug — capture resumes on new/remaining monitors
+- [ ] Section 3: Monitor plug/unplug â€” capture resumes on new/remaining monitors
 - [ ] Section 5: Static screen < 0.5% CPU. Active use < 5% CPU.
-- [ ] Section 6: Permissions — accessibility prompt on first launch
-- [ ] Section 8: Sleep/wake — capture resumes within 5s
-- [ ] Section 9: DB concurrent access — no "database is locked" errors
+- [ ] Section 6: Permissions â€” accessibility prompt on first launch
+- [ ] Section 8: Sleep/wake â€” capture resumes within 5s
+- [ ] Section 9: DB concurrent access â€” no "database is locked" errors
 - [ ] Section 12: Timeline navigation, search results, frame deep links all work
 
 ## 6. E2E Robot Testing
@@ -311,15 +311,15 @@ The same APIs we use for capture can drive automated E2E tests. On macOS, `osasc
 ### Test Layers
 
 **Layer 1: Unit tests** (fast, CI, no UI)
-- Debounce: rapid events → correct trigger count
-- Frame dedup: identical images → skip, different → capture
+- Debounce: rapid events â†’ correct trigger count
+- Frame dedup: identical images â†’ skip, different â†’ capture
 - SnapshotWriter: valid JPEG, correct path format
-- DB: insert_snapshot_frame → query returns correct data
+- DB: insert_snapshot_frame â†’ query returns correct data
 - Search: accessibility_text FTS matches
 
 **Layer 2: Integration tests** (CI, headless)
 - Paired capture: screenshot + accessibility return together
-- OCR fallback: accessibility empty → OCR runs
+- OCR fallback: accessibility empty â†’ OCR runs
 - Legacy compat: video-chunk frames still serve via FFmpeg
 
 **Layer 3: E2E robot tests** (real machines, real UI, nightly CI)
@@ -377,7 +377,7 @@ test_search_thumbnail_correctness:
 - Run event-driven capture during a full workday
 - End-of-day assertions:
   - No crashes, no DB corruption, no orphaned files
-  - Frame count: 3,000–5,000 (reasonable for 8hr active day)
+  - Frame count: 3,000â€“5,000 (reasonable for 8hr active day)
   - Disk: ~300 MB total
   - Search responds in <2s on full-day DB
   - CPU never exceeded 10% sustained
@@ -394,9 +394,9 @@ test_search_thumbnail_correctness:
 
 | Component | macOS | Windows | New code needed? |
 |-----------|-------|---------|-----------------|
-| Event detection | CGEventTap | SetWindowsHookEx | No — already exists in `platform/` |
-| Screenshot | ScreenCaptureKit | DXGI/GDI | No — already abstracted |
-| Accessibility tree | AX API | UI Automation | No — already in `tree/` |
+| Event detection | CGEventTap | SetWindowsHookEx | No â€” already exists in `platform/` |
+| Screenshot | ScreenCaptureKit | DXGI/GDI | No â€” already abstracted |
+| Accessibility tree | AX API | UI Automation | No â€” already in `tree/` |
 | Debounce/dedup | Pure Rust | Same | No |
 | Snapshot writer | File I/O | Same | No |
 | JPEG encoding | `image` crate | Same | No |
@@ -420,8 +420,8 @@ E2E robot tests use platform-native automation:
 |--------|-------|--------|
 | CPU idle (static screen, release) | 3-5% | < 0.5% |
 | CPU active (browsing, release) | 8-15% | < 5% |
-| App switch → frame in DB | 1-5s | < 500ms |
+| App switch â†’ frame in DB | 1-5s | < 500ms |
 | Search thumbnail correctness | ~60% for accessibility matches | 100% |
 | Frame serve latency (new frames) | 100-500ms (FFmpeg) | < 5ms |
-| Storage (8hr active day) | 800 MB – 1.6 GB | ~300 MB |
+| Storage (8hr active day) | 800 MB â€“ 1.6 GB | ~300 MB |
 | Lines of code in capture pipeline | ~2500 (core.rs + video.rs + frame_comparison.rs) | ~800 |

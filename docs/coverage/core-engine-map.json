@@ -1,4 +1,4 @@
-{
+﻿{
   "version": 1,
   "platforms": [
     "windows",
@@ -9,7 +9,7 @@
   "enforceMappedSourceTests": true,
   "trackedCrates": [
     {
-      "crate": "screenpipe-engine",
+      "crate": "MEMORA-engine",
       "testRoots": [
         "tests"
       ],
@@ -18,7 +18,7 @@
       ]
     },
     {
-      "crate": "screenpipe-db",
+      "crate": "MEMORA-db",
       "testRoots": [
         "tests"
       ],
@@ -27,7 +27,7 @@
       ]
     },
     {
-      "crate": "screenpipe-sqlite-coordinator",
+      "crate": "MEMORA-sqlite-coordinator",
       "testRoots": [
         "tests"
       ],
@@ -36,7 +36,7 @@
       ]
     },
     {
-      "crate": "screenpipe-audio",
+      "crate": "MEMORA-audio",
       "testRoots": [
         "tests"
       ],
@@ -45,7 +45,7 @@
       ]
     },
     {
-      "crate": "screenpipe-screen",
+      "crate": "MEMORA-screen",
       "testRoots": [
         "tests"
       ],
@@ -54,7 +54,7 @@
       ]
     },
     {
-      "crate": "screenpipe-a11y",
+      "crate": "MEMORA-a11y",
       "testRoots": [
         "tests"
       ],
@@ -205,7 +205,7 @@
     {
       "id": "engine-config-lifecycle",
       "label": "Engine config, health, sleep, and power lifecycle",
-      "crate": "screenpipe-engine",
+      "crate": "MEMORA-engine",
       "files": [
         "src/recording_config.rs",
         "src/schedule_monitor.rs",
@@ -215,7 +215,7 @@
         "src/power/manager.rs",
         "src/power/monitor.rs",
         "src/permission_monitor.rs",
-        "src/bin/screenpipe-engine.rs",
+        "src/bin/MEMORA-engine.rs",
         "tests/consumer_sleep_test.rs",
         "tests/health_debounce_test.rs"
       ],
@@ -242,7 +242,7 @@
     {
       "id": "engine-capture-timeline",
       "label": "Engine capture, frame linking, HD, and timeline cache",
-      "crate": "screenpipe-engine",
+      "crate": "MEMORA-engine",
       "files": [
         "src/compaction_encoder.rs",
         "src/event_driven_capture.rs",
@@ -294,7 +294,7 @@
     {
       "id": "engine-api-routes",
       "label": "Engine API route logic and stream contracts",
-      "crate": "screenpipe-engine",
+      "crate": "MEMORA-engine",
       "files": [
         "src/auth_key.rs",
         "src/local_chat.rs",
@@ -353,7 +353,7 @@
     {
       "id": "engine-local-api-search-integration",
       "label": "Engine local API search route over indexed DB data",
-      "crate": "screenpipe-engine",
+      "crate": "MEMORA-engine",
       "files": [
         "tests/endpoint_test.rs"
       ],
@@ -377,7 +377,7 @@
     {
       "id": "engine-db-recovery-cli",
       "label": "Engine offline database recovery lifecycle",
-      "crate": "screenpipe-engine",
+      "crate": "MEMORA-engine",
       "files": [
         "src/cli/db.rs"
       ],
@@ -402,7 +402,7 @@
     {
       "id": "engine-focus-os",
       "label": "Engine focus and OS integration helpers",
-      "crate": "screenpipe-engine",
+      "crate": "MEMORA-engine",
       "files": [
         "src/focus_tracker/darwin.rs",
         "src/focus_tracker/windows.rs",
@@ -428,7 +428,7 @@
     {
       "id": "engine-meeting-privacy-sync",
       "label": "Engine meetings, privacy, pipes, and sync units",
-      "crate": "screenpipe-engine",
+      "crate": "MEMORA-engine",
       "files": [
         "src/calendar_speaker_id.rs",
         "src/capture_exclusions.rs",
@@ -487,7 +487,7 @@
     {
       "id": "engine-meeting-watcher",
       "label": "Engine meeting watcher state machines and eval harness",
-      "crate": "screenpipe-engine",
+      "crate": "MEMORA-engine",
       "files": [
         "src/meeting_watcher/mod.rs",
         "src/meeting_watcher/shared/telemetry.rs",
@@ -517,7 +517,7 @@
     {
       "id": "engine-retention-storage",
       "label": "Engine retention, archive, and disk pressure",
-      "crate": "screenpipe-engine",
+      "crate": "MEMORA-engine",
       "files": [
         "src/archive.rs",
         "src/atomic_file.rs",
@@ -547,7 +547,7 @@
     {
       "id": "engine-telemetry-observability",
       "label": "Engine telemetry, crash logs, and reliability metrics",
-      "crate": "screenpipe-engine",
+      "crate": "MEMORA-engine",
       "files": [
         "src/analytics.rs",
         "src/crash_log.rs",
@@ -577,7 +577,7 @@
     {
       "id": "sqlite-coordinator-durable-quarantine",
       "label": "SQLite coordination and durable quarantine",
-      "crate": "screenpipe-sqlite-coordinator",
+      "crate": "MEMORA-sqlite-coordinator",
       "files": [
         "src/lib.rs",
         "src/quarantine.rs"
@@ -603,7 +603,7 @@
     {
       "id": "db-search-indexing",
       "label": "Database OCR/accessibility search indexing",
-      "crate": "screenpipe-db",
+      "crate": "MEMORA-db",
       "files": [
         "src/text_normalizer.rs",
         "src/text_similarity.rs",
@@ -644,7 +644,7 @@
     {
       "id": "db-timeline-frames",
       "label": "Database frames, timeline, and storage joins",
-      "crate": "screenpipe-db",
+      "crate": "MEMORA-db",
       "files": [
         "src/db/feedback.rs",
         "src/db/maintenance.rs",
@@ -688,7 +688,7 @@
     {
       "id": "db-runtime-reliability",
       "label": "Database runtime, WAL, and cancellation reliability",
-      "crate": "screenpipe-db",
+      "crate": "MEMORA-db",
       "files": [
         "src/cancellable_query.rs",
         "src/failpoint_vfs.rs",
@@ -724,7 +724,7 @@
     {
       "id": "db-audio-meetings-speakers",
       "label": "Database audio, live meetings, and speaker state",
-      "crate": "screenpipe-db",
+      "crate": "MEMORA-db",
       "files": [
         "tests/audio_duplicate_test.rs",
         "tests/audio_search_speaker_join_test.rs",
@@ -766,7 +766,7 @@
     {
       "id": "db-accessibility-ui-events",
       "label": "Database accessibility elements and UI events",
-      "crate": "screenpipe-db",
+      "crate": "MEMORA-db",
       "files": [
         "src/db/elements.rs",
         "tests/db_config_test.rs",
@@ -801,7 +801,7 @@
     {
       "id": "audio-transcription-pipeline",
       "label": "Audio transcription, batching, and result cleanup",
-      "crate": "screenpipe-audio",
+      "crate": "MEMORA-audio",
       "files": [
         "src/core/engine.rs",
         "src/core/run_record_and_transcribe.rs",
@@ -842,7 +842,7 @@
     {
       "id": "audio-device-stream-health",
       "label": "Audio device, stream, and lag health",
-      "crate": "screenpipe-audio",
+      "crate": "MEMORA-audio",
       "files": [
         "src/audio_manager/device_monitor.rs",
         "src/audio_manager/manager.rs",
@@ -882,7 +882,7 @@
     {
       "id": "audio-platform-output-capture",
       "label": "Platform output capture, process taps, and stream watchdogs",
-      "crate": "screenpipe-audio",
+      "crate": "MEMORA-audio",
       "files": [
         "src/audio_manager/windows_output_follow.rs",
         "src/core/meeting_audio/macos.rs",
@@ -914,7 +914,7 @@
     {
       "id": "audio-meetings-speakers-dedup",
       "label": "Audio meetings, speakers, and transcript dedupe",
-      "crate": "screenpipe-audio",
+      "crate": "MEMORA-audio",
       "files": [
         "src/audio_manager/meeting_piggyback.rs",
         "src/audio_manager/piggyback_listeners.rs",
@@ -967,7 +967,7 @@
     {
       "id": "audio-pipeline-benchmarks",
       "label": "Audio pipeline benchmark and quality probes",
-      "crate": "screenpipe-audio",
+      "crate": "MEMORA-audio",
       "files": [
         "tests/audio_pipeline_benchmark/audio_fixtures.rs",
         "tests/audio_pipeline_benchmark/cross_device_benchmark.rs",
@@ -1001,7 +1001,7 @@
     {
       "id": "audio-models-filtering",
       "label": "Audio model download and music filtering",
-      "crate": "screenpipe-audio",
+      "crate": "MEMORA-audio",
       "files": [
         "src/models/download.rs",
         "src/utils/audio/music_detection.rs",
@@ -1032,7 +1032,7 @@
     {
       "id": "screen-capture-windowing",
       "label": "Screen capture windowing, filtering, retry, and snapshots",
-      "crate": "screenpipe-screen",
+      "crate": "MEMORA-screen",
       "files": [
         "src/browser_utils/mod.rs",
         "src/capture_screenshot_by_window.rs",
@@ -1074,7 +1074,7 @@
     {
       "id": "screen-capture-ocr-contract",
       "label": "Screen capture to OCR result contract",
-      "crate": "screenpipe-screen",
+      "crate": "MEMORA-screen",
       "files": [
         "src/core.rs",
         "src/tesseract.rs",
@@ -1100,7 +1100,7 @@
     {
       "id": "screen-monitor-platform",
       "label": "Platform monitor enumeration and capture backends",
-      "crate": "screenpipe-screen",
+      "crate": "MEMORA-screen",
       "files": [
         "src/monitor/linux_portal.rs",
         "src/monitor/linux_wayland.rs",
@@ -1127,7 +1127,7 @@
     {
       "id": "screen-macos-ocr",
       "label": "macOS native OCR",
-      "crate": "screenpipe-screen",
+      "crate": "MEMORA-screen",
       "files": [
         "src/apple.rs",
         "tests/apple_vision_test.rs"
@@ -1150,7 +1150,7 @@
     {
       "id": "screen-windows-ocr",
       "label": "Windows native OCR",
-      "crate": "screenpipe-screen",
+      "crate": "MEMORA-screen",
       "files": [
         "src/microsoft.rs",
         "tests/windows_vision_test.rs"
@@ -1173,7 +1173,7 @@
     {
       "id": "screen-custom-ocr",
       "label": "Custom OCR smoke",
-      "crate": "screenpipe-screen",
+      "crate": "MEMORA-screen",
       "files": [
         "tests/custom_ocr_test.rs"
       ],
@@ -1196,7 +1196,7 @@
     {
       "id": "a11y-core-tree-cross-platform",
       "label": "Accessibility tree, cache, budget, and incognito logic",
-      "crate": "screenpipe-a11y",
+      "crate": "MEMORA-a11y",
       "files": [
         "src/activity_feed.rs",
         "src/budget.rs",
@@ -1237,7 +1237,7 @@
     {
       "id": "a11y-linux-tree",
       "label": "Linux accessibility tree units",
-      "crate": "screenpipe-a11y",
+      "crate": "MEMORA-a11y",
       "files": [
         "src/incognito/linux.rs",
         "src/platform/linux.rs",
@@ -1263,7 +1263,7 @@
     {
       "id": "a11y-macos-tree",
       "label": "macOS accessibility tree units and real app probes",
-      "crate": "screenpipe-a11y",
+      "crate": "MEMORA-a11y",
       "files": [
         "src/incognito/macos.rs",
         "src/platform/macos.rs",
@@ -1294,7 +1294,7 @@
     {
       "id": "a11y-windows-tree",
       "label": "Windows accessibility tree and UIA units",
-      "crate": "screenpipe-a11y",
+      "crate": "MEMORA-a11y",
       "files": [
         "src/incognito/windows.rs",
         "src/platform/windows.rs",

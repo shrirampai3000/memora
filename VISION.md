@@ -1,17 +1,23 @@
-# Memora Vision
+// memora — AI that knows everything you've seen, said, or heard
+// https://github.com/shrirampai3000/memora
 
-> "Civilization advances by extending the number of important operations which we can perform without thinking about them." — Alfred North Whitehead
+# Memora Vision & Principles
 
-## What Memora Is
+Memora is designed to be your private, local digital memory.
 
-Memora is **local-first, screen-first, privacy-conscious AI memory** for your computer.
+## Core Mandates
 
-Screen is the universal interface — 10M bits/second, the highest-fidelity signal of human intent. During work, the screen contains the applications and context of digital activity. Memora captures that context locally, indexes it on device, and makes your computer's history searchable, understandable, and recoverable.
+1. **Local-First & Private**
+   Your computer screen reflects your personal and professional life. Data captured by Memora must never leave your machine unless you explicitly choose to send specific prompt context to an external LLM.
 
-## Product Principles
+2. **Screen-First Context**
+   Memora focuses on visual and textual screen context: what you read, wrote, clicked, and viewed. Accessibility APIs provide structured UI trees, supplemented by OCR for bitmap applications.
 
-- **Local-first always.** Your data lives on your device only in SQLite. No mandatory cloud, no mandatory subscriptions, no external API dependencies.
-- **Screen-first.** Memora is built specifically for screen capture and context extraction. Audio recording is intentionally excluded.
-- **Stability over features.** Memora runs 24/7 in the background. CPU, memory, and battery usage must stay minimal and predictable.
-- **Honesty in development status.** State facts cleanly. Document limitations, known issues, and actual runtime behavior transparently.
-- **When in doubt, remove.** Strip away decorative fluff and unnecessary complexities. Focus on robust screen capture, indexing, search, and rewind.
+3. **No Paywalls & No SaaS Telemetry**
+   Memora is an open local application. Features are unlocked for all users without entitlement gates, cloud subscriptions, or tracking telemetry.
+
+4. **Resource Efficiency**
+   Background capture must consume minimal CPU and battery. Continuous per-frame processing uses optimized pipelines, event-driven triggers, and bounded buffers.
+
+5. **Extensible AI Interfaces**
+   Memora exposes a clean local REST API and Model Context Protocol (MCP) servers so that AI agents and tools (Claude, Ollama, local models) can query your screen context securely.

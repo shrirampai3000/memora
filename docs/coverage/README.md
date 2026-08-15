@@ -1,4 +1,4 @@
-# Coverage
+﻿# Coverage
 
 This directory holds repo-level coverage dashboards that sit next to the
 Tauri/WebDriver E2E coverage map.
@@ -7,7 +7,7 @@ The dashboards are behavioral coverage maps, not raw line or branch coverage.
 They answer which product risks are represented by tests, which platforms those
 tests claim, and whether ignored/manual tests are inflating confidence.
 
-From `apps/screenpipe-app-tauri`:
+From `apps/MEMORA-app-tauri`:
 
 ```bash
 bun run coverage:core
@@ -36,7 +36,7 @@ Use `cargo llvm-cov` when you need line or branch coverage:
 
 ```bash
 cargo llvm-cov --workspace --summary-only --output-format json > docs/coverage/core-llvm-cov-summary.json
-cd apps/screenpipe-app-tauri
+cd apps/MEMORA-app-tauri
 bun run coverage:core -- --llvm-cov-summary ../../docs/coverage/core-llvm-cov-summary.json
 ```
 

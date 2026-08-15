@@ -1,4 +1,4 @@
-# SCR-164 frame thumbnail benchmark
+﻿# SCR-164 frame thumbnail benchmark
 
 Measured on Windows on 2026-07-13 with the actual Axum frame routes and 24
 search-card requests issued concurrently.
@@ -7,20 +7,20 @@ search-card requests issued concurrently.
 
 - Source data: 20 existing local snapshot JPEGs, cycled to a 24-card workload.
   Every card had a distinct frame ID, so cycling did not share cache entries.
-- Source dimensions: 1728 × 1084.
+- Source dimensions: 1728 Ã— 1084.
 - Build: Rust development test profile.
 - Runs: five, each with a new in-memory database, server state, and thumbnail
   cache. The table reports medians.
 - `cold` means a thumbnail derivative-cache miss. `warm` means all 24 requests
   hit the thumbnail cache.
 - Elapsed time covers route handling, body collection, and image decoding in
-  the benchmark process. Decoded memory is width × height × 4 bytes.
+  the benchmark process. Decoded memory is width Ã— height Ã— 4 bytes.
 
 Run the benchmark with:
 
 ```powershell
-$env:SCREENPIPE_BENCH_DB="$HOME\.screenpipe\db.sqlite"
-cargo test -p screenpipe-engine --lib benchmark_real_frame_thumbnail_workload --no-default-features -- --ignored --nocapture
+$env:MEMORA_BENCH_DB="$HOME\.MEMORA\db.sqlite"
+cargo test -p MEMORA-engine --lib benchmark_real_frame_thumbnail_workload --no-default-features -- --ignored --nocapture
 ```
 
 ## Results
@@ -39,7 +39,7 @@ Compared with original frames:
   95.1%. Cold elapsed time was 63.8% lower; warm elapsed time was 93.6% lower.
 - 768 px derivatives reduced payload by 76.8% and decoded image memory by
   80.2%. Cold elapsed time was 24.6% lower; warm elapsed time was 78.4% lower.
-- Cache hits improved elapsed time by 5.6× at 384 px and 3.5× at 768 px versus
+- Cache hits improved elapsed time by 5.6Ã— at 384 px and 3.5Ã— at 768 px versus
   cold derivative generation.
 
 ## Limitations

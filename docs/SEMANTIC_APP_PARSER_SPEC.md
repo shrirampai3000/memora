@@ -1,6 +1,6 @@
-# Semantic App Parser
+﻿# Semantic App Parser
 
-<!-- doc-covers: crates/screenpipe-semantic -->
+<!-- doc-covers: crates/MEMORA-semantic -->
 <!-- doc-verified: bc84cd3c8 -->
 > **Current.** Last verified against bc84cd3c8 (2026-08-12).
 
@@ -9,7 +9,7 @@
 
 ## 1. Problem
 
-Screenpipe captures timestamped screenshots, consolidated accessibility/OCR text,
+MEMORA captures timestamped screenshots, consolidated accessibility/OCR text,
 structured elements, and UI events. AI retrieval is already compact, but it is
 app-agnostic. A model repeatedly reconstructs relationships such as sender to
 message, thread to subject, document to editor, and task to status from generic
@@ -43,7 +43,7 @@ the chain because it means the parser recognized a genuinely empty screen.
 
 ## 3. Foundation in this change
 
-`screenpipe-semantic` defines:
+`MEMORA-semantic` defines:
 
 - stable cross-platform `AppIdentity`
 - parser manifests and precompiled app/URL selection
@@ -66,7 +66,7 @@ keep the historical capture path.
 
 ## 3.1 Parser coverage model
 
-Screenpipe does not need a custom semantic parser for every installed app.
+MEMORA does not need a custom semantic parser for every installed app.
 Every app keeps the current generic accessibility and OCR path. A parser is an
 optional quality upgrade for screens where sender, thread, document, task, or
 event relationships matter.
@@ -102,7 +102,7 @@ of app definitions.
 
 The built-in catalog covers 49 app targets using public app identities, URL
 patterns, and stable accessibility contracts. Implementations remain
-Screenpipe-owned parser families and exact app overrides.
+MEMORA-owned parser families and exact app overrides.
 
 | Family | Built-in profiles |
 |---|---|
@@ -141,7 +141,7 @@ that every supported app version exposes the expected accessibility contract.
 ### Real-capture replay checkpoint
 
 `CapturedAccessibilityNode` and `adapt_captured_accessibility_tree` can now
-replay Screenpipe's existing `accessibility_tree_json` through the compact
+replay MEMORA's existing `accessibility_tree_json` through the compact
 arena without committing private capture data. The `replay` example reports
 only node and attribute counts, parser selection, output size, heap estimates,
 and timings. It never prints semantic content.
@@ -166,7 +166,7 @@ capture. Raw frames and extracted text remain local and are not test fixtures.
 
 ### Windows fresh-capture checkpoint
 
-`cargo run -p screenpipe-a11y --example semantic_capture_probe` walks the
+`cargo run -p MEMORA-a11y --example semantic_capture_probe` walks the
 focused window with the production walker in the opt-in semantic configuration
 and emits replay JSONL, so a live app surface can be replayed without waiting
 for capture triggers or content dedup. Probe output holds captured content and
@@ -183,12 +183,12 @@ concentrated in two places rather than spread across apps:
   Microsoft To Do select `family.task` and Outlook select `family.mail`.
 - **False positives through role width.** Windows UIA roles every static string
   `Text`, so "the longest text node wins" turned an Electron crash dialog, an
-  Office subscription banner, and a Chromium page root's `file:///…` name into
+  Office subscription banner, and a Chromium page root's `file:///â€¦` name into
   stored documents. Across a 21-day local replay, 13 of 130 handled frames
   (10%) were this class of output, and the live database held 489 frames
   attached to `family.document` runs of the same shape. The document family now
-  requires a document surface — a document/editor role, or a `Text` node with an
-  explicit document marker — and reads `Value` rather than the label for `Edit`
+  requires a document surface â€” a document/editor role, or a `Text` node with an
+  explicit document marker â€” and reads `Value` rather than the label for `Edit`
   controls. Titles no longer fall back to the localized control type, which is
   what produced documents titled `text`.
 
@@ -199,8 +199,8 @@ class names are build-hashed, but every message container carries
 that gated path, taking an open chat from zero items to a conversation plus its
 attributable turns, with a stable native message ID.
 
-Alacritty, WezTerm, Rio and Zed expose only window chrome over UIA — four nodes,
-no buffer — so they are deliberately absent from the catalog: a profile would
+Alacritty, WezTerm, Rio and Zed expose only window chrome over UIA â€” four nodes,
+no buffer â€” so they are deliberately absent from the catalog: a profile would
 only let a text sweep publish caption buttons as terminal content.
 
 ### Pipe-output evaluation checkpoint
@@ -208,7 +208,7 @@ only let a text sweep publish caption buttons as terminal content.
 A separate side-effect-free suite replays the read and analysis contracts of
 four installed pipes: prompt extraction, repeated-workflow discovery, ordered
 SOP generation, and activity classification. It compares raw accessibility
-JSON, Screenpipe's current element outline, and semantic context against the
+JSON, MEMORA's current element outline, and semantic context against the
 same sanitized ground truth. The model scorer requires valid JSON, the requested
 top-level output fields, required facts, no forbidden contamination, and correct
 observed step order.
@@ -219,7 +219,7 @@ current outline. That is 54.38% fewer prompt tokens than raw JSON and 26.44%
 fewer than the outline. The current outline lost one exact activity fact. Model
 inference is opt-in, local, counterbalanced across formats, and reported
 separately because small-model output is stochastic. Exact commands and results
-live under `crates/screenpipe-semantic/evals/pipes/`.
+live under `crates/MEMORA-semantic/evals/pipes/`.
 
 The first model pass also exposed ambiguity in positional compact fields. The
 renderer now emits explicit `title=`, `actor=`, and `body=` labels, and renders
@@ -293,7 +293,7 @@ action. The agent must verify revision, key, role, name, state, and bounds in th
 latest snapshot. Ambiguous keys require another query or visual fallback.
 This change provides targeting context, not a native desktop action executor.
 A downstream automation tool must resolve the latest target or coordinates;
-Screenpipe does not accept these refs at a write endpoint.
+MEMORA does not accept these refs at a write endpoint.
 
 ## 5. Scheduling
 
