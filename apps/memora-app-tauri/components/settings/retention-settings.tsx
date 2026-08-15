@@ -390,7 +390,7 @@ export function RetentionSettings({
               <p className="text-sm font-medium">erase recent activity</p>
               <p className="text-xs text-muted-foreground">
                 wipe the last few minutes if something was captured by mistake.
-                removes clips, audio, transcripts, and ocr. asks first.
+                removes clips, transcripts, and ocr. asks first.
               </p>
             </div>
           </div>
@@ -458,9 +458,9 @@ export function RetentionSettings({
             {effective === "off"
               ? "currently: keeping everything forever."
               : effective === "media"
-                ? `currently: dropping video + audio older than ${retentionDays} days, text stays searchable.`
+                ? `currently: dropping video older than ${retentionDays} days, text stays searchable.`
                 : effective === "lean"
-                  ? `currently: dropping video + audio and the bulky ocr/accessibility detail older than ${retentionDays} days, text + memories stay searchable.`
+                  ? `currently: dropping video and the bulky ocr/accessibility detail older than ${retentionDays} days, text + memories stay searchable.`
                   : `currently: deleting everything older than ${retentionDays} days.`}
           </p>
 
@@ -477,8 +477,8 @@ export function RetentionSettings({
               checked={effective === "media"}
               recommended
               icon={<Film className="h-4 w-4" />}
-              title="drop video + audio, keep text"
-              body="reclaims mp4/wav/jpeg files. transcripts, ocr, and app history stay searchable. you won't be able to replay clips past the cutoff."
+              title="drop video, keep text"
+              body="reclaims mp4/jpeg files. transcripts, ocr, and app history stay searchable. you won't be able to replay clips past the cutoff."
               onClick={() => handleSelectMode("media")}
             />
             <ModeRow
@@ -656,8 +656,8 @@ export function RetentionSettings({
               delete the last {pendingRecent} minutes?
             </AlertDialogTitle>
             <AlertDialogDescription>
-              this permanently removes every screen recording, audio segment,
-              transcription, and ocr capture from the last {pendingRecent}{" "}
+              this permanently removes every screen recording, transcription,
+              and ocr capture from the last {pendingRecent}{" "}
               minutes. files are also deleted from disk. this cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -692,13 +692,13 @@ export function RetentionSettings({
             <AlertDialogDescription>
               {pendingMode === "media" ? (
                 <>
-                  every day, memora will delete video and audio files older
+                  every day, memora will delete video files older
                   than {retentionDays} days. transcripts, ocr text, and your
                   app/window timeline stay searchable.
                 </>
               ) : pendingMode === "lean" ? (
                 <>
-                  every day, memora will reclaim video and audio files and
+                  every day, memora will reclaim video files and
                   drop the bulky per-element ocr + accessibility detail older
                   than {retentionDays} days â€” the part that makes the database
                   grow. your text search, transcripts, timeline, and memories

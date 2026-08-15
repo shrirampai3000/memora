@@ -78,7 +78,6 @@ describe("PermissionsSection", () => {
 
     await waitFor(() => {
       expect(screen.getByTestId("permission-granted-screen-recording")).toBeInTheDocument();
-      expect(screen.getByTestId("permission-granted-microphone")).toBeInTheDocument();
       expect(screen.getByTestId("permission-enable-accessibility")).toBeInTheDocument();
     });
 
@@ -125,11 +124,11 @@ describe("PermissionsSection", () => {
   it("opens System Settings from Manage on a granted permission", async () => {
     render(<PermissionsSection />);
 
-    const manage = await screen.findByTestId("permission-manage-microphone");
+    const manage = await screen.findByTestId("permission-manage-screen-recording");
     fireEvent.click(manage);
 
     await waitFor(() => {
-      expect(flowMocks.openPermissionSettingsWithFlow).toHaveBeenCalledWith("microphone");
+      expect(flowMocks.openPermissionSettingsWithFlow).toHaveBeenCalledWith("screenRecording");
     });
   });
 

@@ -30,10 +30,6 @@ export const searchIndex: SettingsField[] = [
     keywords: ["screen", "display", "capture", "tcc", "permission"],
   },
   {
-    label: "Microphone",
-    keywords: ["mic", "audio", "voice", "permission"],
-  },
-  {
     label: "Accessibility",
     keywords: ["ax", "ui", "context", "permission"],
   },
@@ -240,19 +236,11 @@ function RequiredPermissions() {
       statusKey: "screenRecording",
     },
     {
-      id: "microphone",
-      permission: "microphone",
-      title: "Microphone",
-      description:
-        "Required to record your voice during meetings and conversations.",
-      statusKey: "microphone",
-    },
-    {
       id: "accessibility",
       permission: "accessibility",
       title: "Accessibility",
       description:
-        "Required to read app and window context, meeting controls, and UI text.",
+        "Required to read app and window context and UI text.",
       statusKey: "accessibility",
     },
   ];

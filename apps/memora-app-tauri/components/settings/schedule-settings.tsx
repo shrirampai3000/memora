@@ -166,15 +166,12 @@ export function ScheduleSettings({
             <div>
               <h3 className="text-sm font-medium text-foreground">
                 Recording Schedule
-                <span className="ml-1.5 text-[9px] font-mono uppercase tracking-wider bg-muted text-muted-foreground px-1 py-0.5 rounded">
-                  beta
-                </span>
               </h3>
               <p className="text-xs text-muted-foreground mt-0.5">
                 Define when recording is active
               </p>
             </div>
-            <HelpTooltip text="Set specific time ranges per day when screen and audio recording should be active. Outside these hours, recording pauses automatically." />
+            <HelpTooltip text="Set specific time ranges per day when screen recording should be active. Outside these hours, recording pauses automatically." />
           </div>
           <Switch
             checked={enabled}

@@ -252,12 +252,6 @@ export function DiskUsageSection() {
                     </div>
                   ));
                 })()}
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-muted-foreground">Audio</span>
-                <span className="font-medium">
-                  {diskUsage?.media.audios_size || "0 KB"}
-                </span>
-              </div>
               <div className="flex items-center justify-between text-xs pt-1 border-t">
                 <span className="font-medium">Total</span>
                 <span className="font-bold">
