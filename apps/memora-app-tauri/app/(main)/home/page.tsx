@@ -10,12 +10,10 @@ import {
   Plus,
   Brain,
   MonitorPlay,
-  HelpCircle,
   PanelLeftClose,
   PanelLeftOpen,
   Search,
   Plug,
-  CalendarClock,
 } from "lucide-react";
 import { emit } from "@tauri-apps/api/event";
 import {
@@ -722,10 +720,9 @@ function HomeContent() {
     // felt like opening an old recent).
     home: { label: "Chat", icon: <Plus className="h-3.5 w-3.5" /> },
     brain: { label: "Brain", icon: <Brain className="h-3.5 w-3.5" /> },
-    meetings: { label: "Meetings", icon: <CalendarClock className="h-3.5 w-3.5" /> },
-    pipes: { label: "Scheduled", icon: <TimerReset className="h-3.5 w-3.5" /> },
     timeline: { label: "Timeline", icon: <MonitorPlay className="h-3.5 w-3.5" /> },
     connections: { label: "Connections", icon: <Plug className="h-3.5 w-3.5" /> },
+    pipes: { label: "Scheduled", icon: <TimerReset className="h-3.5 w-3.5" /> },
   };
 
   const sidebarLayout = normalizeSidebarNavLayout(settings.sidebarNavLayout);
@@ -737,13 +734,6 @@ function HomeContent() {
 
   const visibleSidebarIds = resolveVisibleSidebarNavIds(sidebarLayout, availableSidebarIds);
   const hiddenSidebarIds = resolveHiddenSidebarNavIds(sidebarLayout, availableSidebarIds);
-
-  // Meetings is a sidebar row like any other. Hidden means "not a row", which
-  // is exactly when the compact chrome-strip icon takes over â€” so the two can
-  // never both render, and neither survives policy hiding the section.
-  const meetingsInSidebar = visibleSidebarIds.includes("meetings");
-  const meetingsInToolbar =
-    !meetingsInSidebar && availableSidebarIds.includes("meetings");
 
   const sidebarCustomizable = Boolean(settings.enableSidebarCustomization);
   const persistSidebarLayout = (next: ReturnType<typeof normalizeSidebarNavLayout>) => {
@@ -760,10 +750,7 @@ function HomeContent() {
     );
     toast({
       title: `${label} hidden`,
-      description:
-        id === "meetings"
-          ? "still one click away from the icon next to search."
-          : "find it under Hidden at the bottom of the sidebar.",
+      description: "find it under Hidden at the bottom of the sidebar.",
       action: (
         <ToastAction
           altText={`Show ${label} in the sidebar again`}
@@ -864,7 +851,7 @@ function HomeContent() {
           {/* Sidebar */}
           <TooltipProvider delayDuration={0}>
           {/* Top-left chrome strip â€” pinned next to the macOS traffic
-              lights: sidebar toggle, search, meetings and recording-status dot.
+              lights: sidebar toggle, search and recording-status dot.
               No wordmark, no header row (Claude / Codex style). When
               the sidebar is collapsed it is hidden entirely and the
               strip floats over the content, reduced to toggle + status
@@ -1053,41 +1040,6 @@ function HomeContent() {
                   </div>
                   <span className="truncate text-xs font-medium">Settings</span>
                 </button>
-
-                {/* Help stays discoverable without taking a second row. */}
-                {!isSectionHidden("help") && (() => {
-                  const isActive = activeSection === "help";
-                  return (
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <button
-                          type="button"
-                          data-testid="nav-help"
-                          data-announcement-anchor="sidebar-help"
-                          aria-label="Help"
-                          onClick={() => {
-                            setActiveSection("help");
-                          }}
-                          className={cn(
-                            "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-all duration-150",
-                            isActive
-                              ? isTranslucent
-                                ? "vibrant-nav-active"
-                                : "border border-border bg-card text-primary shadow-sm"
-                              : isTranslucent
-                                ? "vibrant-nav-item vibrant-nav-hover"
-                                : "text-muted-foreground hover:bg-card/50 hover:text-foreground",
-                          )}
-                        >
-                          <HelpCircle className="h-4 w-4" />
-                        </button>
-                      </TooltipTrigger>
-                      <TooltipContent side="top" className="text-xs">
-                        Help
-                      </TooltipContent>
-                    </Tooltip>
-                  );
-                })()}
               </div>
             </div>
           </AppSidebar>

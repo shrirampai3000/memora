@@ -24,7 +24,7 @@ function renderList(overrides: Partial<React.ComponentProps<typeof SidebarNavLis
   render(
     <SidebarNavList
       items={ITEMS}
-      hiddenItems={[{ id: "meetings" as SidebarNavId, label: "Meetings" }]}
+      hiddenItems={[{ id: "connections" as SidebarNavId, label: "Connections" }]}
       activeId="home"
       isTranslucent={false}
       customizable
@@ -103,8 +103,8 @@ describe("SidebarNavList", () => {
   it("gives hidden rows a visible home that restores them in one click", () => {
     const handlers = renderList();
     expect(screen.getByTestId("sidebar-hidden-strip")).toBeInTheDocument();
-    fireEvent.click(screen.getByTestId("sidebar-show-meetings"));
-    expect(handlers.onSetHidden).toHaveBeenCalledWith("meetings", false);
+    fireEvent.click(screen.getByTestId("sidebar-show-connections"));
+    expect(handlers.onSetHidden).toHaveBeenCalledWith("connections", false);
   });
 
   it("carries no hidden strip when nothing is hidden", () => {
@@ -159,12 +159,12 @@ describe("SidebarNavList", () => {
     expect(handlers.onSelect).toHaveBeenCalledWith("pipes");
   });
 
-  it("renders trailing adornments such as the meeting recording dot", () => {
+  it("renders trailing adornments such as the running-pipe count", () => {
     renderList({
       items: [
         {
-          id: "meetings" as SidebarNavId,
-          label: "Meetings",
+          id: "pipes" as SidebarNavId,
+          label: "Scheduled",
           icon: <span />,
           trailing: <span data-testid="recording-dot" />,
         },

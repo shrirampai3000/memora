@@ -9,21 +9,15 @@
  * the hidden set so the page component only renders â€” every rule about which
  * ids are real, what order they fall back to, and what may be hidden lives in
  * one testable place.
- *
- * Meetings ships as a visible sidebar row. Hiding it means "not a sidebar
- * row", and the Home chrome strip renders its compact icon instead. So "move
- * meetings to the sidebar" and "hide meetings from the sidebar" are the same
- * operation on this layout, not a second parallel preference.
  */
 
 /** Canonical order â€” also the fallback for ids a stored layout never mentioned. */
 export const SIDEBAR_NAV_ORDER = [
   "home",
   "brain",
-  "meetings",
-  "pipes",
   "timeline",
   "connections",
+  "pipes",
 ] as const;
 
 export type SidebarNavId = (typeof SIDEBAR_NAV_ORDER)[number];

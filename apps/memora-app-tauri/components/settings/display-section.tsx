@@ -9,7 +9,7 @@ import { commands } from "@/lib/utils/tauri";
 import { useTheme } from "@/components/theme-provider";
 import { Switch } from "@/components/ui/switch";
 import { Card, CardContent } from "@/components/ui/card";
-import { Moon, Sun, Monitor, Layers, MessageSquare, PanelLeft, Maximize2, EyeOff, MinusSquare, Type, CalendarClock } from "lucide-react";
+import { Moon, Sun, Monitor, Layers, MessageSquare, PanelLeft, Maximize2, EyeOff, MinusSquare, Type } from "lucide-react";
 import { usePlatform } from "@/lib/hooks/use-platform";
 import { HelpTooltip } from "@/components/ui/help-tooltip";
 import { useToast } from "@/components/ui/use-toast";
@@ -21,11 +21,8 @@ import type { SettingsField } from "./settings-search";
 import { ManagedSwitch } from "@/components/enterprise-locked-setting";
 import {
   DEFAULT_SIDEBAR_NAV_LAYOUT,
-  SIDEBAR_NAV_ORDER,
   isSidebarNavLayoutDefault,
   normalizeSidebarNavLayout,
-  resolveVisibleSidebarNavIds,
-  setSidebarNavItemHidden,
 } from "@/lib/utils/sidebar-nav-layout";
 
 /** Settings search index for this section. Co-located with the component so adding a field here means updating one file. See `SettingsField` in `./settings-search` for the schema. */
@@ -38,7 +35,7 @@ export const searchIndex: SettingsField[] = [
   { label: "Overlay Size" },
   { label: "Show Overlay in Screen Recording", keywords: ["capture", "obs", "screen share"] },
   { label: "Sidebar translucency", keywords: ["vibrancy", "translucent"] },
-  { label: "Meetings in Sidebar", keywords: ["meeting", "meetings", "sidebar", "toolbar", "nav", "navigation", "icon", "reorder", "customize"] },
+  { label: "Sidebar layout", keywords: ["sidebar", "nav", "navigation", "reorder", "hide", "customize", "layout"] },
 ];
 
 export function DisplaySection() {
@@ -50,10 +47,6 @@ export function DisplaySection() {
   // re-render) so we never fire two overlapping memora restarts.
   const timelineRestartingRef = React.useRef(false);
   const sidebarLayout = normalizeSidebarNavLayout(settings?.sidebarNavLayout);
-  const meetingsInSidebar = resolveVisibleSidebarNavIds(
-    sidebarLayout,
-    SIDEBAR_NAV_ORDER,
-  ).includes("meetings");
 
   const handleSettingsChange = (newSettings: Partial<Settings>) => {
     if (settings) {
@@ -370,48 +363,20 @@ export function DisplaySection() {
             </div>
           </CardContent>
         </Card>
-        {/* Home sidebar layout. Meetings ships as a sidebar row; hiding it is
-            what puts its compact icon in the top-left chrome strip â€” so this
-            switch and the right-click menu drive the same layout state rather
-            than two competing preferences. */}
+        {/* Home sidebar layout â€” reorder, hide, or restore sidebar rows. */}
         <Card className="border-border bg-card">
           <CardContent className="px-3 py-2.5">
             <div className="space-y-2.5">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2.5">
-                  <CalendarClock className="h-4 w-4 text-muted-foreground shrink-0" />
-                  <div>
-                    <h3 className="text-sm font-medium text-foreground flex items-center gap-1.5">
-                      Meetings in Sidebar
-                      <HelpTooltip text="Show Meetings as a labelled row in the Home sidebar. Off keeps it as the compact icon in the top-left strip next to search. The live-recording dot shows either way." />
-                    </h3>
-                    <p className="text-xs text-muted-foreground">
-                      {meetingsInSidebar
-                        ? "Labelled row in the sidebar"
-                        : "Compact icon next to search"}
-                    </p>
-                  </div>
-                </div>
-                <Switch
-                  id="meetingsInSidebar"
-                  data-testid="meetings-in-sidebar"
-                  checked={meetingsInSidebar}
-                  onCheckedChange={(checked) =>
-                    handleSettingsChange({
-                      sidebarNavLayout: setSidebarNavItemHidden(
-                        sidebarLayout,
-                        SIDEBAR_NAV_ORDER,
-                        "meetings",
-                        !checked,
-                      ),
-                    })
-                  }
-                />
+              <div className="flex items-center space-x-2.5">
+                <PanelLeft className="h-4 w-4 text-muted-foreground shrink-0" />
+                <h3 className="text-sm font-medium text-foreground">
+                  Sidebar layout
+                </h3>
               </div>
               <p className="ml-[26px] text-xs text-muted-foreground">
                 {settings?.enableSidebarCustomization
                   ? "Drag sidebar rows to reorder them, or right-click one to move, hide, or restore it."
-                  : "Reordering and hiding other sidebar rows is rolling out."}
+                  : "Reordering and hiding sidebar rows is rolling out."}
               </p>
               {!isSidebarNavLayoutDefault(sidebarLayout) && (
                 <div className="ml-[26px]">

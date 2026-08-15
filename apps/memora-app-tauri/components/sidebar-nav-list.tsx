@@ -68,7 +68,7 @@ export type SidebarNavItem = {
   id: SidebarNavId;
   label: string;
   icon: React.ReactNode;
-  /** Right-aligned adornment (running-pipe count, meeting recording dot). */
+  /** Right-aligned adornment (e.g. running-pipe count). */
   trailing?: React.ReactNode;
 };
 

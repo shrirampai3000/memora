@@ -74,7 +74,7 @@ function makeDeps(overrides: Partial<CommandPaletteDeps> = {}): CommandPaletteDe
     sections: [
       { id: "home", label: "Chat" },
       { id: "brain", label: "Brain" },
-      { id: "meetings", label: "Meetings" },
+      { id: "timeline", label: "Timeline" },
     ],
     timelineDisabled: false,
     ...overrides,
@@ -139,8 +139,8 @@ describe("buildPaletteEntries", () => {
   it("maps available sidebar sections to go-to rows with sidebar labels", () => {
     const entries = buildPaletteEntries(makeDeps(), mocks.settings, true);
     const goTo = entries.filter((e) => e.group === "go to");
-    expect(goTo.map((e) => e.id)).toEqual(["go_chat", "go_brain", "go_meetings"]);
-    expect(goTo.map((e) => e.label)).toEqual(["Chat", "Brain", "Meetings"]);
+    expect(goTo.map((e) => e.id)).toEqual(["go_chat", "go_brain", "go_timeline"]);
+    expect(goTo.map((e) => e.label)).toEqual(["Chat", "Brain", "Timeline"]);
   });
 
   it("uses word-form hints for in-app chords off macOS", () => {
@@ -209,11 +209,11 @@ describe("CommandPalette", () => {
     openPalette();
     const input = await screen.findByTestId("command-palette-input");
 
-    fireEvent.change(input, { target: { value: "meetings" } });
+    fireEvent.change(input, { target: { value: "brain" } });
     fireEvent.keyDown(input, { key: "Enter" });
 
     await waitFor(() =>
-      expect(deps.goToSection).toHaveBeenCalledWith("meetings"),
+      expect(deps.goToSection).toHaveBeenCalledWith("brain"),
     );
   });
 });
