@@ -87,7 +87,7 @@ describe("notification registry", () => {
   });
 
   it("groupState reflects all / some / none", () => {
-    const g = "meetings" as const;
+    const g = "system" as const;
     const cats = categoriesForGroup(g);
     const allOn = Object.fromEntries(cats.map((c) => [c.id, true]));
     const allOff = Object.fromEntries(cats.map((c) => [c.id, false]));

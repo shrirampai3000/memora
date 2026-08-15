@@ -19,7 +19,6 @@
 
 export type NotificationGroupId =
   | "recording"
-  | "meetings"
   | "system"
   | "automation"
   | "app";
@@ -59,11 +58,6 @@ export const NOTIFICATION_GROUPS: NotificationGroup[] = [
     description: "know the moment capture stops working",
   },
   {
-    id: "meetings",
-    label: "meetings",
-    description: "live notes and audio/transcript health during calls",
-  },
-  {
     id: "system",
     label: "system",
     description: "monitors, docking, and power changes",
@@ -91,32 +85,6 @@ export const NOTIFICATION_CATEGORIES: NotificationCategory[] = [
     experimental: true,
     mirrorsShowRestartNotifications: true,
     keywords: ["recording needs help", "recording stopped", "capture health", "stall", "frozen"],
-  },
-  {
-    id: "meetingLiveNotes",
-    label: "Meeting live notes",
-    description: "Prompt to open a live note when a meeting is detected",
-    group: "meetings",
-    default: true,
-    keywords: ["live note", "meeting detected", "call"],
-  },
-  {
-    id: "audioCaptureStalled",
-    label: "Meeting audio not capturing",
-    description:
-      "OS notification when a meeting is detected but no audio reaches the recorder within 60s",
-    group: "meetings",
-    default: true,
-    keywords: ["no audio", "mic", "silent", "meeting"],
-  },
-  {
-    id: "liveTranscriptStalled",
-    label: "Live transcript not flowing",
-    description:
-      "In-app alert when audio is captured but no live transcript arrives within 60s",
-    group: "meetings",
-    default: true,
-    keywords: ["transcript", "subtitles", "stt"],
   },
   {
     id: "displayChanges",
