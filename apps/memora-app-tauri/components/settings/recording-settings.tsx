@@ -46,8 +46,6 @@ export const screenSearchIndex: SettingsField[] = [
   { label: "Recording quality", keywords: ["fps", "quality"], conditional: true },
   // conditional: hidden when screen recording is off (same gate as Recording quality).
   { label: "Capture frequency", keywords: ["screenshot", "interval", "idle", "cadence", "every", "minimum"], conditional: true },
-  { label: "HD recording for meetings", keywords: ["hd", "meeting"] },
-  { label: "Chinese mirror", keywords: ["china", "mirror"] },
 ];
 
 /** Backward-compatible aggregate for callers that still treat capture as one area. */
@@ -302,7 +300,6 @@ const SERVER_RESTART_SETTINGS = new Set<keyof SettingsStore>([
   "asyncPiiRedaction",
   "asyncImagePiiRedaction",
   "piiBackend",
-  "useChineseMirror",
   "enableWorkflowEvents",
   "disableSnapshotCompaction",
 ]);
@@ -1498,249 +1495,6 @@ function TranscriptionDictionary({
   );
 }
 
-type HdDefaultMode = "ask" | "always" | "never";
-
-interface HdState {
-  active: boolean;
-  intervalMs: number;
-  session: { kind: "meeting"; meeting_id: number } | { kind: "timer" } | null;
-  elapsedSecs: number | null;
-  remainingSecs: number | null;
-  defaultMode: HdDefaultMode;
-  meeting: boolean | null;
-}
-
-type PushOutcome =
-  | { kind: "ok"; state: HdState }
-  | { kind: "engine-down" }
-  | { kind: "engine-rejected"; status: number };
-
-function fmtRemaining(secs: number): string {
-  if (secs >= 3600) {
-    const h = Math.floor(secs / 3600);
-    const m = Math.floor((secs % 3600) / 60);
-    return m === 0 ? `${h}h` : `${h}h ${m}m`;
-  }
-  if (secs >= 60) return `${Math.ceil(secs / 60)}m`;
-  return `${Math.max(secs, 1)}s`;
-}
-
-function HighFpsCard({
-  settings,
-  onSettingsChange,
-}: {
-  settings: any;
-  onSettingsChange: (patch: Record<string, any>) => void;
-}) {
-  const [live, setLive] = React.useState<HdState | null>(null);
-  const [busy, setBusy] = React.useState(false);
-  const [lastError, setLastError] = React.useState<string | null>(null);
-
-  const fetchState = React.useCallback(async () => {
-    try {
-      const res = await localFetch("/capture/hd");
-      if (res.ok) {
-        setLive(await res.json());
-        setLastError(null);
-      }
-    } catch {
-      /* engine may not be running yet â€” keep last known */
-    }
-  }, []);
-
-  React.useEffect(() => {
-    fetchState();
-  }, [fetchState]);
-  useInterval(fetchState, 2000);
-
-  const pushSettings = React.useCallback(
-    async (patch: Partial<{ defaultMode: HdDefaultMode; intervalMs: number }>): Promise<PushOutcome> => {
-      setBusy(true);
-      try {
-        const res = await localFetch("/capture/hd/settings", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(patch),
-        });
-        if (res.ok) {
-          const state: HdState = await res.json();
-          setLive(state);
-          setLastError(null);
-          return { kind: "ok", state };
-        }
-        return { kind: "engine-rejected", status: res.status };
-      } catch {
-        return { kind: "engine-down" };
-      } finally {
-        setBusy(false);
-      }
-    },
-    []
-  );
-
-  const stopSession = React.useCallback(async () => {
-    setBusy(true);
-    try {
-      const res = await localFetch("/capture/hd/stop", { method: "POST" });
-      if (res.ok) setLive(await res.json());
-    } catch {
-      /* engine may be down */
-    } finally {
-      setBusy(false);
-    }
-  }, []);
-
-  // Persist preference to settings.bin AND push to running engine.
-  // Surfaces failures so a silent "saved" with no runtime effect can't
-  // confuse the user â€” that was the #1 bug in the previous design.
-  const persistAndPush = React.useCallback(
-    async (
-      patch: Record<string, any>,
-      runtimePatch: Partial<{ defaultMode: HdDefaultMode; intervalMs: number }>,
-      label: string,
-    ) => {
-      onSettingsChange(patch);
-      const outcome = await pushSettings(runtimePatch);
-      if (outcome.kind === "engine-down") {
-        setLastError(
-          `${label} saved â€” but the engine isn't reachable, so it'll only take effect on next start.`,
-        );
-      } else if (outcome.kind === "engine-rejected") {
-        setLastError(
-          `${label} saved â€” but the engine rejected the live update (HTTP ${outcome.status}). Restart to apply.`,
-        );
-      }
-    },
-    [onSettingsChange, pushSettings],
-  );
-
-  // Guard against intervalMs ever leaking through as 0 (engine clamps to
-  // 33, but a stale or older response shouldn't divide-by-zero the UI).
-  const intervalMs = Math.max(
-    live?.intervalMs ?? settings.hdRecordingIntervalMs ?? 100,
-    33,
-  );
-  const fps = Math.round(1000 / intervalMs);
-  const defaultMode: HdDefaultMode =
-    live?.defaultMode ?? settings.hdRecordingDefault ?? "ask";
-  const active = live?.active ?? false;
-  const sessionKind = live?.session?.kind ?? null;
-  const remaining = live?.remainingSecs ?? 0;
-
-  const statusBadge = active
-    ? sessionKind === "meeting"
-      ? `Recording at ~${fps} fps â€” stops when call ends`
-      : `Recording at ~${fps} fps â€” ${fmtRemaining(remaining)} left`
-    : "Idle";
-
-  return (
-    <Card className="border-border bg-card">
-      <CardContent className="px-3 py-2.5 space-y-3">
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center space-x-2.5 min-w-0">
-            <Monitor className="h-4 w-4 text-muted-foreground shrink-0" />
-            <div className="min-w-0">
-              <h3 className="text-sm font-medium text-foreground">HD recording for meetings</h3>
-              <p className="text-xs text-muted-foreground">
-                Capture screen at higher rate during calls so you can rewatch
-                slides, demos, and shared docs. {statusBadge}.
-              </p>
-              <p className="text-[11px] text-muted-foreground mt-1">
-                Start from the meeting-start notification, the tray menu, or{" "}
-                <code>POST /capture/hd/start</code>. Every session has a
-                natural end â€” no indefinite mode.
-              </p>
-            </div>
-          </div>
-          {active && (
-            <Button
-              size="sm"
-              variant="outline"
-              disabled={busy}
-              onClick={stopSession}
-            >
-              Stop now
-            </Button>
-          )}
-        </div>
-
-        {lastError && (
-          <div className="rounded-md border border-amber-500/40 bg-amber-500/10 px-2.5 py-1.5 text-[11px] text-amber-700 dark:text-amber-300">
-            {lastError}
-          </div>
-        )}
-
-        <div className="pt-3 border-t border-border space-y-2.5">
-          <div>
-            <h4 className="text-xs font-medium text-foreground mb-1.5">
-              When a meeting starts
-            </h4>
-            <div className="flex flex-col gap-1">
-              {(
-                [
-                  { v: "ask" as const, label: "Ask me", hint: "Adds an â€œopen note + HDâ€ action to the meeting-start notification â€” one click opens the note and starts HD (recommended)" },
-                  { v: "always" as const, label: "Always record at HD", hint: "Auto-start every detected meeting â€” more disk + CPU per call" },
-                  { v: "never" as const, label: "Never", hint: "No prompt; only the tray timer can start a session" },
-                ] satisfies Array<{ v: HdDefaultMode; label: string; hint: string }>
-              ).map(({ v, label, hint }) => (
-                <label key={v} className="flex items-start gap-2 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="hdDefault"
-                    className="mt-1"
-                    checked={defaultMode === v}
-                    onChange={() =>
-                      persistAndPush(
-                        { hdRecordingDefault: v },
-                        { defaultMode: v },
-                        "Meeting default",
-                      )
-                    }
-                  />
-                  <span>
-                    <span className="text-xs text-foreground">{label}</span>
-                    <span className="block text-[11px] text-muted-foreground">{hint}</span>
-                  </span>
-                </label>
-              ))}
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between gap-3 pt-2 border-t border-border">
-            <div className="min-w-0">
-              <h4 className="text-xs font-medium text-foreground">Quality</h4>
-              <p className="text-[11px] text-muted-foreground">
-                Lower interval = smoother replay + more disk. â‰¥ 33 ms (30 fps).
-              </p>
-            </div>
-            <Select
-              value={String(intervalMs)}
-              onValueChange={(value) => {
-                const ms = Number(value);
-                persistAndPush(
-                  { hdRecordingIntervalMs: ms },
-                  { intervalMs: ms },
-                  "Capture interval",
-                );
-              }}
-            >
-              <SelectTrigger className="w-[200px] h-8 text-xs">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="200">200 ms â€” 5 fps (light)</SelectItem>
-                <SelectItem value="100">100 ms â€” 10 fps (default)</SelectItem>
-                <SelectItem value="67">67 ms â€” 15 fps</SelectItem>
-                <SelectItem value="33">33 ms â€” 30 fps (max)</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
 type RecordingSettingsSection = "audio" | "screen";
 
 export function RecordingSettings({ section }: { section: RecordingSettingsSection }) {
@@ -2576,10 +2330,6 @@ export function RecordingSettings({ section }: { section: RecordingSettingsSecti
   const handleAnalyticsToggle = (checked: boolean) => {
     const newValue = checked;
     handleSettingsChange({ analyticsEnabled: newValue }, true);
-  };
-
-  const handleChineseMirrorToggle = async (checked: boolean) => {
-    handleSettingsChange({ useChineseMirror: checked }, true);
   };
 
   // Voice training
@@ -4151,41 +3901,10 @@ Your screen is a pipe. Everything you see, hear, and type flows through it. Memo
           );
         })()}
 
-        {/* HD recording â€” bound sessions only (meeting or timer; no
-            indefinite mode). The controller lives in the engine and is
-            HTTP-controlled so settings take effect immediately. Primary
-            UX is the meeting-start notification's "+ HD" action and the
-            tray timer submenu; this card exposes the persistent prefs. */}
-        {!settings.disableVision && (
-          <HighFpsCard
-            settings={settings}
-            onSettingsChange={(patch) => handleSettingsChange(patch, true)}
-          />
-        )}
 
       </div>
       </LockedSetting>
 
-
-      {/* System */}
-      <div className="space-y-2 pt-2">
-        <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-1">System</h2>
-
-        <Card className="border-border bg-card">
-          <CardContent className="px-3 py-2.5">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2.5">
-                <Globe className="h-4 w-4 text-muted-foreground shrink-0" />
-                <div>
-                  <h3 className="text-sm font-medium text-foreground">Chinese mirror</h3>
-                  <p className="text-xs text-muted-foreground">For users in China</p>
-                </div>
-              </div>
-              <Switch id="useChineseMirror" checked={settings.useChineseMirror} onCheckedChange={handleChineseMirrorToggle} />
-            </div>
-          </CardContent>
-        </Card>
-      </div>
 
       {/* Power and battery are important but infrequent decisions. Keep them
           in Recording for discoverability/search, but defer the full control
