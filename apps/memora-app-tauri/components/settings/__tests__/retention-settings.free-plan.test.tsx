@@ -85,7 +85,7 @@ describe("RetentionSettings account-plan independence", () => {
 
     expect(
       screen.getByText(
-        /currently: dropping video \+ audio and the bulky ocr\/accessibility detail older than 90 days/i,
+        /currently: dropping video and the bulky ocr\/accessibility detail older than 90 days/i,
       ),
     ).toBeInTheDocument();
 
