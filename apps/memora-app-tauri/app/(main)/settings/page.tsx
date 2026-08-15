@@ -13,11 +13,8 @@ import {
   HardDrive,
   Shield,
   Layout,
-  Users,
   Mic,
   Bell,
-  BarChart3,
-  Gift,
   ChevronLeft,
   SlidersHorizontal,
   KeyRound,
@@ -42,25 +39,14 @@ import {
   screenSearchIndex,
 } from "@/components/settings/recording-settings";
 import GeneralSettings, { searchIndex as generalSearchIndex } from "@/components/settings/general-settings";
-import { TeamSection, searchIndex as teamSearchIndex } from "@/components/settings/team-section";
 import { DisplaySection, searchIndex as displaySearchIndex } from "@/components/settings/display-section";
 import { PrivacySection, searchIndex as privacySearchIndex } from "@/components/settings/privacy-section";
 import { PermissionsSection, searchIndex as permissionsSearchIndex } from "@/components/settings/permissions-section";
 import { StorageSection, searchIndex as storageSearchIndex } from "@/components/settings/storage-section";
 import { NotificationsSettings, searchIndex as notificationsSearchIndex } from "@/components/settings/notifications-settings";
-import { UsageSection, searchIndex as usageSearchIndex } from "@/components/settings/usage-section";
 
 import { searchIndex as powerSearchIndex } from "@/components/settings/battery-saver-section";
-import { ReferralCard } from "@/components/settings/referral-card";
-import { SettingsSearchInput, SettingsSearchPopover, searchSettingsNav, scrollToSettingsField, type IndexedSettingsField, type SettingsField } from "@/components/settings/settings-search";
-
-// Settings search index for the inline ReferralSection defined further down in
-// this file. Lives here because the section itself lives here; same co-location
-// principle as the standalone sections.
-const referralSearchIndex: SettingsField[] = [
-  { label: "Invite link", keywords: ["invite", "refer", "promo"] },
-  { label: "Free month", keywords: ["discount", "earn"] },
-];
+import { SettingsSearchInput, SettingsSearchPopover, searchSettingsNav, scrollToSettingsField, type IndexedSettingsField } from "@/components/settings/settings-search";
 
 /**
  * Aggregate every section's co-located `searchIndex` export into one flat list,
@@ -82,13 +68,10 @@ const ALL_SETTINGS_FIELDS: IndexedSettingsField[] = [
   ...powerSearchIndex.map((f) => ({ ...f, section: "recording" })),
   ...shortcutsSearchIndex.map((f) => ({ ...f, section: "shortcuts" })),
   ...notificationsSearchIndex.map((f) => ({ ...f, section: "notifications" })),
-  ...usageSearchIndex.map((f) => ({ ...f, section: "usage" })),
   ...privacySearchIndex.map((f) => ({ ...f, section: "privacy" })),
   ...permissionsSearchIndex.map((f) => ({ ...f, section: "permissions" })),
   ...storageSearchIndex.map((f) => ({ ...f, section: "storage" })),
-  ...teamSearchIndex.map((f) => ({ ...f, section: "team" })),
   ...accountSearchIndex.map((f) => ({ ...f, section: "account" })),
-  ...referralSearchIndex.map((f) => ({ ...f, section: "referral" })),
 ];
 import { useManagedPolicy } from "@/lib/hooks/use-managed-policy";
 import { usePlatform } from "@/lib/hooks/use-platform";
@@ -104,15 +87,11 @@ import posthog from "posthog-js";
  */
 const NAV_LAYOUT_VERSION = "v2-demand-ordered";
 
-function ReferralSection() {
-  return <ReferralCard />;
-}
-
 function SettingsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const fromSection = searchParams.get("from");
-  const { isSectionHidden, isManagedDeployment } = useManagedPolicy();
+  const { isSectionHidden } = useManagedPolicy();
   const { isTranslucent } = useSidebarContext();
   const { isMac, isLoading: isPlatformLoading } = usePlatform();
   // macOS TCC recovery only. Non-mac must not see the nav item, search hits,
@@ -193,21 +172,12 @@ function SettingsContent() {
       items: [
         { id: "ai-settings" as const, label: "AI features", icon: <SlidersHorizontal className="h-4 w-4" /> },
         { id: "ai" as const, label: "Models & keys", icon: <Brain className="h-4 w-4" /> },
-        { id: "usage" as const, label: "AI credits", icon: <BarChart3 className="h-4 w-4" /> },
       ].filter((s) => !isSettingsSectionHidden(s.id)),
     },
     {
       label: "Account",
       items: [
         { id: "account" as const, label: "Account", icon: <User className="h-4 w-4" /> },
-        // Hide "Team" on enterprise builds â€” those installs are already
-        // org-managed; the desktop has nothing to manage. Admins use the
-        // /enterprise dashboard on the web. On consumer builds we still
-        // surface Team as a marketing entry point to /team.
-        ...(isManagedDeployment
-          ? []
-          : [{ id: "team" as const, label: "Team", icon: <Users className="h-4 w-4" /> }]),
-        { id: "referral" as const, label: "Get free month", icon: <Gift className="h-4 w-4" /> },
       ].filter((s) => !isSectionHidden(s.id)),
     },
     {
@@ -341,10 +311,7 @@ function SettingsContent() {
       case "privacy":       return <PrivacySection />;
       case "permissions":   return showPermissions ? <PermissionsSection /> : null;
       case "storage":       return <StorageSection />;
-      case "team":          return <TeamSection />;
       case "notifications": return <NotificationsSettings />;
-      case "referral":      return <ReferralSection />;
-      case "usage":         return <UsageSection />;
     }
   };
 

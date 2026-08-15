@@ -90,7 +90,10 @@ export function UsagePopover() {
           onRefresh={hosted.plan === "unknown" ? undefined : query.refresh}
           onOpenSettings={() => {
             setOpen(false);
-            router.push("/settings?section=usage");
+            // The dedicated AI-credits/usage settings section was removed with
+            // the commercial surface; send the user to Account (sign-in /
+            // identity), which is where quota is tied to an account.
+            router.push("/settings?section=account");
           }}
         />
       </PopoverContent>

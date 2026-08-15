@@ -74,10 +74,11 @@ const ACCOUNT_LOGIN_REQUIRED_ERROR =
 // Sections always hidden in enterprise builds (regardless of policy).
 // "account" is deliberately NOT here: authentication is handled by onboarding
 // and the global fallback gate, while the account settings section remains
-// independently admin-controlled through hidden_sections. "referral" stays
-// hardcoded because the consumer growth surface is meaningless in a managed
-// organization.
-const ENTERPRISE_DEFAULT_HIDDEN = ["referral"];
+// independently admin-controlled through hidden_sections.
+//
+// The referral/growth surface has been removed from the app entirely, so there
+// is nothing left to hide by default; admin `hidden_sections` still applies.
+const ENTERPRISE_DEFAULT_HIDDEN: string[] = [];
 
 // Re-fetch policy every 5 minutes so admin changes propagate without app restart
 const POLL_INTERVAL_MS = 5 * 60 * 1000;
