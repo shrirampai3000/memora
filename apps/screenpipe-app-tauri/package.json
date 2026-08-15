@@ -119,7 +119,7 @@
     "js-levenshtein": "^1.1.6",
     "localforage": "^1.10.0",
     "lodash": "^4.17.23",
-    "lucide-react": "^0.414.0",
+    "lucide-react": "^1.31.0",
     "mammoth": "^1.12.0",
     "mdast-util-to-string": "^4.0.0",
     "mermaid": "^11.12.3",
