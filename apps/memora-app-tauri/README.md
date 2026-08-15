@@ -1,4 +1,4 @@
-﻿# MEMORA desktop app
+# Memora Desktop App
 
 Use the source-build instructions in [`CONTRIBUTING.md`](../../CONTRIBUTING.md):
 
@@ -6,10 +6,9 @@ Use the source-build instructions in [`CONTRIBUTING.md`](../../CONTRIBUTING.md):
 - [macOS app and DMG](../../CONTRIBUTING.md#macos)
 - [Linux desktop bundles](../../CONTRIBUTING.md#linux)
 
-Run the Tauri commands from this directory, not the repository root. Product
-usage documentation is available at [docs.github.com/shrirampai3000/memora](https://docs.github.com/shrirampai3000/memora/getting-started).
+Run the Tauri commands from this directory, not the repository root.
 
-## fast browser UI development
+## Fast Browser UI Development
 
 From this directory, run:
 
@@ -18,7 +17,7 @@ bun run dev:web
 ```
 
 Then open <http://127.0.0.1:1420/home>. This starts only Next.js: Tauri IPC,
-the settings store, the local engine HTTP API, and the health/meeting WebSockets
+the settings store, the local engine HTTP API, and the health WebSockets
 are replaced by in-memory browser mocks. Rust and the sidecar are not built or
 started, so this is the shortest loop for layout and ordinary React work.
 
@@ -34,7 +33,7 @@ Edits such as changing the time range or layout mode are preserved for the
 current browser session, so Live View UI work does not need the Rust backend.
 
 To use the real engine while still skipping the Tauri/Rust build, first start
-or keep MEMORA running, then run:
+or keep Memora running, then run:
 
 ```bash
 MEMORA_LOCAL_API_KEY=your-local-key bun run dev:web:live
@@ -49,38 +48,29 @@ native windows, menus, tray behavior, permissions, updater flows, filesystem
 access, or WebKit-only layout/focus behavior. Check those changes in Tauri
 before considering them complete.
 
-## dev builds are isolated from your installed app
+## Dev Builds Isolation
 
 `bun tauri dev` / `bun run dev:tauri` / `cargo run` do **not** touch the
-production install. Every debug build redirects itself at startup
-(`src-tauri/src/dev_isolation.rs`):
+production install. Every debug build redirects itself at startup:
 
 | | production | dev |
 | --- | --- | --- |
-| data dir (DB, `store.bin`, secrets, pipes, chats) | `~/.MEMORA` | `~/.MEMORA-dev` |
+| data dir (DB, `store.bin`, secrets, pipes, chats) | `~/.memora` | `~/.memora-dev` |
 | local API port | 3030 | 3130 |
 | focus / notification port | 11435 | 11535 |
-| telemetry | on | off |
-| agent MCP configs (`~/.claude`, `~/.codex`, â€¦) | real home | empty fake home |
-
-This is what makes running dev next to the installed app safe. Without it, dev
-would hand off to production over the focus port and exit instead of launching,
-and its recording supervisor would `kill -9` production's engine to claim
-port 3030 â€” mid-write to a multi-GB SQLite database.
 
 You keep a separate dev profile, so first launch shows onboarding and an empty
-timeline. That is expected. To reset, delete `~/.MEMORA-dev`.
+timeline. That is expected. To reset, delete `~/.memora-dev`.
 
 Any variable you set yourself still wins, so you can relax one dimension at a
 time:
 
 ```bash
 # real recordings, still on the dev ports and dev settings store
-MEMORA_DATA_DIR=~/.MEMORA bun run dev:tauri
+MEMORA_DATA_DIR=~/.memora bun run dev:tauri
 
 # OAuth connections: providers register the callback as localhost:3030 exactly,
-# so testing them needs the production port. Quit the installed app first â€”
-# whichever instance starts second kills the other's engine to claim the port.
+# so testing them needs the production port.
 MEMORA_PORT=3030 bun run dev:tauri
 ```
 
@@ -90,5 +80,4 @@ To opt out completely and run against the production profile:
 MEMORA_DEV_USE_PROD_DATA=1 bun run dev:tauri
 ```
 
-Release builds are never redirected, and the E2E harness keeps its own
-isolation (`e2e/helpers/app-launcher.ts`) unchanged.
+Release builds are never redirected.
