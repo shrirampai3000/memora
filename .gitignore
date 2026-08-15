@@ -1,4 +1,4 @@
-﻿# Binaries for programs and examples
+# Binaries for programs and examples
 *.exe
 *.exe~
 *.dll
@@ -101,3 +101,6 @@ docs/screenshots/
 docs/skills-registry/
 .dockerignore
 lefthook.yml
+
+# GitHub Actions
+.github/
