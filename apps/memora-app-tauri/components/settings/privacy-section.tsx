@@ -21,10 +21,6 @@ export const searchIndex: SettingsField[] = [
     keywords: ["private", "browser", "enhanced", "automation"],
   },
   { label: "PII masking", keywords: ["mask", "redact", "columns", "url", "fields"] },
-  {
-    label: "Remote support logs",
-    keywords: ["support", "diagnostic", "troubleshooting", "remote", "logs"],
-  },
   { label: "Telemetry" },
 ];
 import { LockedSetting, ManagedSwitch } from "@/components/enterprise-locked-setting";
@@ -58,7 +54,6 @@ import { InputMonitoringPanel } from "./input-monitoring-card";
 import { ApplyRestartBar } from "./apply-restart-bar";
 import { useSettings, Settings } from "@/lib/hooks/use-settings";
 import { ScheduleSettings } from "./schedule-settings";
-import { RemoteSupportLogsCard } from "./remote-support-logs-card";
 import { open as openUrl } from "@tauri-apps/plugin-shell";
 import { platform } from "@tauri-apps/plugin-os";
 import { useToast } from "@/components/ui/use-toast";
@@ -1670,8 +1665,6 @@ export function PrivacySection() {
           onBrowse={(list) => setPicker(list)}
         />
       </div>
-
-      <RemoteSupportLogsCard />
 
       {/* Telemetry */}
       <div className="space-y-2">
