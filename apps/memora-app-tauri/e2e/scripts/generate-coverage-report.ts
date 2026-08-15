@@ -639,7 +639,7 @@ function specsWithoutTests(specs: SpecCoverageWithCount[]): SpecCoverageWithCoun
 }
 
 // Aggregate the runtime outcome of the specs that make a critical feature
-// "covered"/"weak" on a platform â€” used to flag declared coverage that never
+// "covered"/"weak" on a platform — used to flag declared coverage that never
 // actually executed (self-skipped on hosted runners, opt-in seed missing, etc.).
 function featureRuntimeOutcome(
   state: CriticalState,
@@ -714,7 +714,7 @@ function integritySection(
     lines.push(
       drift.length === 0
         ? `- ${platform}: all declared critical coverage executed at runtime.`
-        : `- ${platform}: declared coverage that did NOT execute â€” ${drift.join("; ")}.`,
+        : `- ${platform}: declared coverage that did NOT execute — ${drift.join("; ")}.`,
     );
   }
 

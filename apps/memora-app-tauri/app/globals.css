@@ -136,7 +136,7 @@
     /* Sharp corners - no radius */
     --radius: 0;
 
-    /* Font size scale â€” controlled by the font size setting */
+    /* Font size scale — controlled by the font size setting */
     --font-size-base: 16px;
     --text-xs: calc(var(--font-size-base) * 0.75);
     --text-sm: calc(var(--font-size-base) * 0.875);
@@ -202,7 +202,7 @@
     --info-foreground: 0 0% 0%;
     --info-muted: 0 0% 15%;
 
-    /* Muted colors â€” brightened for vibrancy/translucent sidebar */
+    /* Muted colors — brightened for vibrancy/translucent sidebar */
     --muted: 0 0% 14%;
     --muted-foreground: 0 0% 75%; /* Brightened from 60% for vibrancy contrast */
 
@@ -269,7 +269,7 @@
     background-color: transparent !important;
   }
 
-  /* Prevent intermittent scrollbars on Windows overlay â€” html/body should never scroll,
+  /* Prevent intermittent scrollbars on Windows overlay — html/body should never scroll,
      inner containers handle their own scrolling with scrollbar-hide */
   html, body {
     overflow: hidden;
@@ -327,7 +327,7 @@
     -webkit-image-analysis: none;
   }
 
-  /* Selectable text layer â€” override global user-select:none for OCR text overlay
+  /* Selectable text layer — override global user-select:none for OCR text overlay
      and chat message prose content.
      Must override *, :not(input):not(textarea), and ::before/::after rules above. */
   .selectable-text-layer,
@@ -352,7 +352,7 @@
     background-color: rgba(59, 130, 246, 0.35) !important;
   }
 
-  /* Constrain selection highlight to text width â€” same approach as chat markdown.
+  /* Constrain selection highlight to text width — same approach as chat markdown.
      flex + items-start makes block children shrink-wrap their content so
      ::selection doesn't paint across the full container width. */
   .ProseMirror {
@@ -429,7 +429,7 @@
     display: none;  /* No arrow buttons */
   }
 
-  /* Vibrant sidebar theme â€” Minimal macOS backdrop */
+  /* Vibrant sidebar theme — Minimal macOS backdrop */
   .vibrant-sidebar {
     /* Light mode: subtle light overlay on translucent background */
     background-color: rgba(255, 255, 255, 0.08) !important;
@@ -443,7 +443,7 @@
     background-color: rgba(255, 255, 255, 0.06) !important;
   }
 
-  /* System light mode fallback â€” covers the gap before JS applies .light class */
+  /* System light mode fallback — covers the gap before JS applies .light class */
   @media (prefers-color-scheme: light) {
     html:not(.dark) .vibrant-sidebar {
       background-color: rgba(255, 255, 255, 0.08) !important;
@@ -493,7 +493,7 @@
     }
   }
 
-  /* System dark mode fallback â€” covers the gap before JS applies .dark class.
+  /* System dark mode fallback — covers the gap before JS applies .dark class.
      Applies to BOTH background and all text colors so there is no flash of
      dark-vibrancy-background + light-mode text (= invisible text) on first
      paint when macOS is in Auto/dark mode. */
@@ -607,7 +607,7 @@
     transform-origin: bottom;
   }
 
-  /* Meeting "listening" waveform â€” each stick oscillates with its own
+  /* Meeting "listening" waveform — each stick oscillates with its own
      duration/negative delay (set inline) so the wave never synchronizes. */
   @keyframes meeting-stick-dance {
     0%,
@@ -637,7 +637,7 @@
     animation: shimmer 1.5s infinite linear;
   }
 
-  /* Settings "AI audio & video analysis" preview â€” a dot traveling along a
+  /* Settings "AI audio & video analysis" preview — a dot traveling along a
      connector track to show data flowing into / out of the enclave. */
   @keyframes sp-flow {
     0% {
@@ -937,7 +937,7 @@
   opacity: 1;
 }
 
-/* TipTap â€” show the placeholder on the current empty block.
+/* TipTap — show the placeholder on the current empty block.
    Mirrors the muted-foreground/40 styling we use on native textareas. */
 .ProseMirror .is-empty::before {
   content: attr(data-placeholder);
@@ -947,7 +947,7 @@
   pointer-events: none;
 }
 
-/* Reduced motion â€” global safety net.
+/* Reduced motion — global safety net.
    Individual components opt in today (`.meeting-listening-stick`,
    `.sp-flow-dot`, `.sp-onboarding-*`), which means every animation added
    since has to remember to. This catches the rest.
@@ -955,7 +955,7 @@
    Durations collapse to 0.01ms rather than `animation: none`, deliberately:
    `none` never fires `animationend`/`transitionend`, so anything awaiting
    those events to advance a state machine would hang instead of finishing
-   instantly. Iteration count is left alone for the same reason â€” an
+   instantly. Iteration count is left alone for the same reason — an
    infinite liveness indicator keeps ticking, just imperceptibly, rather
    than freezing on a frame and reading as "stuck".
 

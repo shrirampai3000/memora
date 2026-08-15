@@ -18,7 +18,7 @@ export default defineConfig({
 		// not vitest).
 		//
 		// Files importing from "bun:test" run under the Bun-native runner
-		// (`bun run test:bun`), not vitest â€” they are discovered and
+		// (`bun run test:bun`), not vitest — they are discovered and
 		// excluded automatically by scripts/bun-test-files.ts, which is
 		// also what test:bun executes. No hand-maintained list.
 		exclude: [
@@ -31,7 +31,7 @@ export default defineConfig({
 			...collectBunTestFiles(__dirname),
 			// KNOWN-BROKEN: pre-existing failures surfaced when wiring tests
 			// into CI. Each is a real assertion failure (component drifted
-			// from its test) â€” excluded so we can ship the CI gate now and
+			// from its test) — excluded so we can ship the CI gate now and
 			// fix in follow-ups. Don't add new entries without an owner.
 			//   - text-overlay.test.tsx: container.firstChild null + missing
 			//     "solid" underline on link blocks
