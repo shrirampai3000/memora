@@ -70,6 +70,7 @@ cargo build -p memora-engine
 
 ## Documentation
 
+- [SETUP.md](SETUP.md) — Prerequisites and step-by-step local build & run.
 - [VISION.md](VISION.md) — Product identity and principles.
 - [ARCHITECTURE.md](ARCHITECTURE.md) — System architecture, crates, and data flow.
 - [PRIVACY.md](PRIVACY.md) — Privacy design and local data boundaries.
