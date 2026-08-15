@@ -18,9 +18,27 @@ module.exports = {
 	  },
 	  extend: {
 		fontFamily: {
-		  /* MEMORA Brand: Monospace primary */
-		  sans: ["JetBrains Mono", "SF Mono", "IBM Plex Mono", "ui-monospace", "monospace"],
-		  mono: ["JetBrains Mono", "SF Mono", "IBM Plex Mono", "ui-monospace", "monospace"],
+		  /* Primary UI: Inter (loaded via next/font as --font-sans), with a
+		     system sans fallback. Monospace kept for genuine code / data. */
+		  sans: [
+			"var(--font-sans)",
+			"ui-sans-serif",
+			"system-ui",
+			"-apple-system",
+			"Segoe UI",
+			"Roboto",
+			"Helvetica Neue",
+			"Arial",
+			"sans-serif",
+		  ],
+		  mono: [
+			"ui-monospace",
+			"SFMono-Regular",
+			"Menlo",
+			"Consolas",
+			"Liberation Mono",
+			"monospace",
+		  ],
 		},
 		fontSize: {
 		  xs:    ["var(--text-xs)",   { lineHeight: "1rem" }],

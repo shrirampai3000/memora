@@ -33,7 +33,11 @@ import {
   openChatConversationInCurrentChatSurface,
 } from "@/lib/chat-utils";
 
-const inter = Inter({ subsets: ["latin"] });
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-sans",
+  display: "swap",
+});
 
 function isChatFocusedRecentSwitcherRoute(
   pathname: string | null,
@@ -240,7 +244,7 @@ export default function RootLayout({
   }, []);
 
   return (
-    <html lang="en" suppressHydrationWarning className={isSearch ? "bg-transparent" : ""}>
+    <html lang="en" suppressHydrationWarning className={`${inter.variable}${isSearch ? " bg-transparent" : ""}`}>
       <head>
         <script
           dangerouslySetInnerHTML={{
@@ -287,7 +291,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className={`${inter.className} scrollbar-hide ${isSearch ? "bg-transparent" : ""}`}>
+      <body className={`${inter.className} antialiased scrollbar-hide ${isSearch ? "bg-transparent" : ""}`}>
         {/* Providers sits INSIDE <body> so the body element is present in
             both the static export and the first client render. With Providers
             wrapping <body>, gating Providers' children on a post-mount flag
