@@ -80,10 +80,15 @@ Run these from `apps/memora-app-tauri`.
 repo root, in its own terminal:
 
 ```bash
-./target/debug/MEMORA record --port 3030
+./target/debug/MEMORA record --port 3030 --enable-semantic-context
 ```
 
-(On Windows use `./target/debug/MEMORA.exe record --port 3030`.)
+(On Windows use `./target/debug/MEMORA.exe record --port 3030 --enable-semantic-context`.)
+
+> `--enable-semantic-context` turns on the local semantic vector-embedding
+> worker (the "Brain" semantic search). It's opt-in and off by default; drop the
+> flag if you only want keyword (FTS5) search. It must be passed as a real CLI
+> flag — the `MEMORA_ENABLE_SEMANTIC_CONTEXT` env var alone is not enough.
 
 **b. Get the local API token** the UI uses to talk to the engine:
 
@@ -115,7 +120,47 @@ bun run dev:web
 
 ---
 
-## 6. Good to know
+## 6. The three core features
+
+Once the engine + UI are running, all three work locally:
+
+- **⏱️ Timeline** — continuous screen capture. Runs automatically once the engine
+  is started; screenshots are compacted into MP4 chunks under `~/.memora/data/`
+  and are scrubbable from the Timeline tab. Nothing to configure.
+- **🧠 Brain** — local memory + search over everything captured, stored in
+  `~/.memora/db.sqlite`. Keyword search (FTS5) works out of the box; semantic
+  vector search needs the `--enable-semantic-context` flag above.
+- **💬 Chat** — ask questions over your Brain. It needs an LLM provider (below).
+
+### Setting up Chat (pick one provider)
+
+The app is decoupled from any hosted cloud — no account/login required. Configure
+a provider in **Settings → Models & keys → Create Preset**:
+
+**Option A — Local model via Ollama (free, offline):**
+
+1. Install [Ollama](https://ollama.com/download) and pull a model:
+   ```bash
+   ollama pull llama3.2:1b
+   ```
+   (A larger model like `qwen2.5:7b` answers better; a dedicated GPU is strongly
+   recommended — CPU-only models are slow.)
+2. In **Create Preset**, choose **Ollama**, pick the model, run **Connection
+   Test**, and save.
+
+**Option B — Direct Claude API key:**
+
+1. In **Create Preset**, choose **Claude API** and paste your Anthropic API key.
+2. Run **Connection Test** and save.
+
+> The Chat provider uses the desktop app's native HTTP layer. In the
+> `dev:web:live` browser preview that layer is mocked, so the connection test /
+> live chat only fully work in the packaged Tauri desktop app, not the browser
+> preview. Timeline and Brain work in both.
+
+---
+
+## 7. Good to know
 
 - **Scope:** This build is local-first and **screen-only** — the UI reflects
   that (no meetings, audio recording, or commercial/subscription surfaces).
