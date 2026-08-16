@@ -47,13 +47,10 @@ interface LoginDialogState {
 export const useLoginDialog = create<LoginDialogState>((set) => ({
   isOpen: false,
   setIsOpen: (open) => set({ isOpen: open }),
-  checkLogin: (user, showDialog = true) => {
-    if (!user?.token) {
-      if (showDialog) {
-        set({ isOpen: true });
-      }
-      return false;
-    }
-    return true;
-  },
+  // Memora runs fully local/BYO-key — there is no required Memora Cloud
+  // account, so login never gates a feature and the pop-up is never forced.
+  // Sign-in is still available on demand (Account settings' "Log in"), it
+  // just isn't a prerequisite for anything. Callers that used the return
+  // value to gate now always proceed.
+  checkLogin: () => true,
 }));
