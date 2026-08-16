@@ -81,6 +81,13 @@ export function useFrameLoading(opts: {
 		offsetX: number;
 		offsetY: number;
 	} | null>(null);
+	// In the `dev:web:live` browser preview there is no native asset/video
+	// protocol (convertFileSrc / tauri://), so <video> playback and disk-loaded
+	// snapshots can't render. The engine already serves every frame as a JPEG
+	// over plain HTTP (GET /frames/:id), which the browser CAN fetch — so in
+	// this mode we force the HTTP-image path for all frames. No effect on the
+	// packaged desktop app.
+	const isWebDevLive = process.env.NEXT_PUBLIC_MEMORA_WEB_DEV === "live";
 	// Whether to use <video> seeking or fall back to <img> via ffmpeg
 	// Try video mode first on all platforms; onError fallback handles unsupported codecs
 	const [useVideoMode, setUseVideoMode] = useState(true);
@@ -424,6 +431,11 @@ export function useFrameLoading(opts: {
 	// Also used when searchNavFrame is true (instant JPEG for first frame after search nav)
 	const fallbackImageUrl = useMemo(() => {
 		if (!debouncedFrame) return null;
+		// Browser preview: no native video/asset protocol, so always pull the
+		// engine's HTTP JPEG for every frame.
+		if (isWebDevLive) {
+			return appendAuthToken(`${getApiBaseUrl()}/frames/${debouncedFrame.frameId}`);
+		}
 		// Force HTTP JPEG for search navigation (skip slow video seek)
 		if (searchNavFrame) {
 			return appendAuthToken(`${getApiBaseUrl()}/frames/${debouncedFrame.frameId}`);
@@ -435,7 +447,7 @@ export function useFrameLoading(opts: {
 		if (useVideoMode) return null;
 		if (isSnapshotFrame) return null;
 		return appendAuthToken(`${getApiBaseUrl()}/frames/${debouncedFrame.frameId}`);
-	}, [useVideoMode, debouncedFrame, isSnapshotFrame, snapshotFailed, searchNavFrame]);
+	}, [useVideoMode, debouncedFrame, isSnapshotFrame, snapshotFailed, searchNavFrame, isWebDevLive]);
 
 	// Preload fallback image — only swap displayed URL when the new image loads successfully
 	useEffect(() => {
@@ -574,7 +586,9 @@ export function useFrameLoading(opts: {
 		debouncedFrame,
 		isLoading,
 		hasError,
-		useVideoMode,
+		// Browser preview never uses the <video> path — force image mode so the
+		// consumer renders the HTTP JPEG for every frame.
+		useVideoMode: isWebDevLive ? false : useVideoMode,
 		setUseVideoMode,
 		displayedFallbackUrl,
 		snapshotAssetUrl,
