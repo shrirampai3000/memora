@@ -113,8 +113,6 @@ const ShortcutRow = ({
     showMemoraShortcut: string;
     startRecordingShortcut: string;
     stopRecordingShortcut: string;
-    startAudioShortcut: string;
-    stopAudioShortcut: string;
     showChatShortcut: string;
     searchShortcut: string;
     lockVaultShortcut?: string;
@@ -123,20 +121,20 @@ const ShortcutRow = ({
       showShortcut: updatedShortcuts.showMemoraShortcut,
       startShortcut: updatedShortcuts.startRecordingShortcut,
       stopShortcut: updatedShortcuts.stopRecordingShortcut,
-      startAudioShortcut: updatedShortcuts.startAudioShortcut,
-      stopAudioShortcut: updatedShortcuts.stopAudioShortcut,
       showChatShortcut: updatedShortcuts.showChatShortcut,
       searchShortcut: updatedShortcuts.searchShortcut,
     });
     // wait 1 second for settings to persist
     await new Promise((resolve) => setTimeout(resolve, 1000));
-    // updateGlobalShortcuts re-reads all shortcuts from store including showChatShortcut
+    // updateGlobalShortcuts re-reads all shortcuts from store including showChatShortcut.
+    // Audio capture is not supported (screen-only), so the audio-shortcut slots
+    // are always empty — the engine binding keeps the positional args.
     await commands.updateGlobalShortcuts(
       updatedShortcuts.showMemoraShortcut,
       updatedShortcuts.startRecordingShortcut,
       updatedShortcuts.stopRecordingShortcut,
-      updatedShortcuts.startAudioShortcut,
-      updatedShortcuts.stopAudioShortcut,
+      "",
+      "",
     {}
     );
 
@@ -151,8 +149,6 @@ const ShortcutRow = ({
         showMemoraShortcut: settings.showMemoraShortcut,
         startRecordingShortcut: settings.startRecordingShortcut,
         stopRecordingShortcut: settings.stopRecordingShortcut,
-        startAudioShortcut: settings.startAudioShortcut,
-        stopAudioShortcut: settings.stopAudioShortcut,
         showChatShortcut: settings.showChatShortcut,
         searchShortcut: settings.searchShortcut,
         lockVaultShortcut: settings.lockVaultShortcut || "",
@@ -193,8 +189,6 @@ const ShortcutRow = ({
             showMemoraShortcut: shortcut === "showMemoraShortcut" ? keys : settings.showMemoraShortcut,
             startRecordingShortcut: shortcut === "startRecordingShortcut" ? keys : settings.startRecordingShortcut,
             stopRecordingShortcut: shortcut === "stopRecordingShortcut" ? keys : settings.stopRecordingShortcut,
-            startAudioShortcut: shortcut === "startAudioShortcut" ? keys : settings.startAudioShortcut,
-            stopAudioShortcut: shortcut === "stopAudioShortcut" ? keys : settings.stopAudioShortcut,
             showChatShortcut: shortcut === "showChatShortcut" ? keys : settings.showChatShortcut,
             searchShortcut: shortcut === "searchShortcut" ? keys : settings.searchShortcut,
             lockVaultShortcut: shortcut === "lockVaultShortcut" ? keys : (settings.lockVaultShortcut || ""),
@@ -247,8 +241,6 @@ const ShortcutRow = ({
       showMemoraShortcut: settings.showMemoraShortcut,
       startRecordingShortcut: settings.startRecordingShortcut,
       stopRecordingShortcut: settings.stopRecordingShortcut,
-      startAudioShortcut: settings.startAudioShortcut,
-      stopAudioShortcut: settings.stopAudioShortcut,
       showChatShortcut: settings.showChatShortcut,
       searchShortcut: settings.searchShortcut,
       lockVaultShortcut: settings.lockVaultShortcut || "",

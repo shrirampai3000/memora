@@ -52,52 +52,6 @@ export function CaptureFrequencyPreview({ seconds }: { seconds: number }) {
   );
 }
 
-// â”€â”€ Audio capture mode â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-// A day strip showing when each mode records: "always" fills the day,
-// "meetings-only" lights up just a few detected blocks.
-function DayStripRow({
-  label,
-  active,
-  children,
-}: {
-  label: string;
-  active: boolean;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className={cn("flex items-center gap-2", !active && "opacity-40")}>
-      <span className="w-16 shrink-0 text-[10px] text-muted-foreground">
-        {label}
-        {active && " · now"}
-      </span>
-      <span className="min-w-0 flex-1">{children}</span>
-    </div>
-  );
-}
-
-export function AudioCaptureModePreview({ mode }: { mode: string }) {
-  const meetings = mode === "meetings-only";
-  return (
-    <div className="mt-2.5 space-y-1.5 rounded-md border border-border bg-muted/40 px-2.5 py-2">
-      <DayStripRow label="always" active={!meetings}>
-        <span className="block h-2.5 rounded-[2px] bg-foreground" />
-      </DayStripRow>
-      <DayStripRow label="meetings" active={meetings}>
-        <span className="relative block h-2.5 rounded-[2px] bg-foreground/15">
-          <span className="absolute inset-y-0 left-[16%] w-[12%] rounded-[2px] bg-foreground" />
-          <span className="absolute inset-y-0 left-[46%] w-[8%] rounded-[2px] bg-foreground" />
-          <span className="absolute inset-y-0 left-[70%] w-[16%] rounded-[2px] bg-foreground" />
-        </span>
-      </DayStripRow>
-      <p className="text-[10px] text-muted-foreground">
-        {meetings
-          ? "records only during detected meetings — saves battery, disk & transcription cost"
-          : "records continuously, 24/7"}
-      </p>
-    </div>
-  );
-}
-
 // â”€â”€ Retention / storage saver â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // One past timeline entry, shown as the pieces it's made of, with the
 // pieces each cleanup mode drops struck through.

@@ -24,8 +24,6 @@ const ShortcutSection = () => {
       "showMemoraShortcut",
       "startRecordingShortcut",
       "stopRecordingShortcut",
-      "startAudioShortcut",
-      "stopAudioShortcut",
       "showChatShortcut",
       "searchShortcut",
     ] as const;
@@ -43,22 +41,22 @@ const ShortcutSection = () => {
         showMemoraShortcut: defaults.showMemoraShortcut,
         startRecordingShortcut: defaults.startRecordingShortcut,
         stopRecordingShortcut: defaults.stopRecordingShortcut,
-        startAudioShortcut: defaults.startAudioShortcut,
-        stopAudioShortcut: defaults.stopAudioShortcut,
         showChatShortcut: defaults.showChatShortcut,
         searchShortcut: defaults.searchShortcut,
         lockVaultShortcut: defaults.lockVaultShortcut,
         disabledShortcuts: [],
       });
 
-      // wait for settings to persist then re-register with the backend
+      // wait for settings to persist then re-register with the backend.
+      // Audio capture is not supported (screen-only) — the audio-shortcut
+      // slots are always empty; the engine binding keeps the positional args.
       await new Promise((resolve) => setTimeout(resolve, 1000));
       await commands.updateGlobalShortcuts(
         defaults.showMemoraShortcut,
         defaults.startRecordingShortcut,
         defaults.stopRecordingShortcut,
-        defaults.startAudioShortcut,
-        defaults.stopAudioShortcut,
+        "",
+        "",
         {}
       );
 

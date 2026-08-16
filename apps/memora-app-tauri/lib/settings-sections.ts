@@ -23,8 +23,7 @@ export type SettingsSection =
   | "privacy"
   | "permissions"
   | "storage"
-  | "notifications"
-  | "speakers";
+  | "notifications";
 
 export const ALL_SETTINGS_SECTIONS: SettingsSection[] = [
   "display", "general", "ai", "ai-settings", "recording", "shortcuts", "notifications",
@@ -38,7 +37,6 @@ const LEGACY_SECTION_ALIASES: Record<string, SettingsSection> = {
   "cloud-archive": "storage",
   "cloud-sync": "storage",
   "audio": "recording",
-  "speakers": "recording",
 };
 
 /**

@@ -10,7 +10,7 @@ import React, { useEffect, useState, useMemo, useCallback, useRef } from "react"
 import { useEventListener } from "@/lib/hooks/use-event-listener";
 import { useInterval } from "@/lib/hooks/use-interval";
 import { useSettingsIndexDriftCheck, type SettingsField } from "./settings-search";
-import { CaptureFrequencyPreview, AudioCaptureModePreview } from "./setting-previews";
+import { CaptureFrequencyPreview } from "./setting-previews";
 import {
   SEMANTIC_CONTEXT_MODE_COPY,
   type SemanticContextMode,
@@ -2597,7 +2597,6 @@ Your screen is a pipe. Everything you see, hear, and type flows through it. Memo
                 </SelectContent>
               </Select>
             </div>
-            <AudioCaptureModePreview mode={settings.audioCaptureMode ?? "always"} />
           </CardContent>
         </Card>
         )}
