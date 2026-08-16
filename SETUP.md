@@ -129,7 +129,12 @@ Once the engine + UI are running, all three work locally:
   and are scrubbable from the Timeline tab. Nothing to configure.
 - **🧠 Brain** — local memory + search over everything captured, stored in
   `~/.memora/db.sqlite`. Keyword search (FTS5) works out of the box; semantic
-  vector search needs the `--enable-semantic-context` flag above.
+  vector search needs the `--enable-semantic-context` flag above. The
+  **Memories** tab starts empty; to populate it with a few example memories for
+  a demo, run (with the engine up):
+  ```bash
+  bun scripts/seed-demo-memories.mjs
+  ```
 - **💬 Chat** — ask questions over your Brain. It needs an LLM provider (below).
 
 ### Setting up Chat (pick one provider)
