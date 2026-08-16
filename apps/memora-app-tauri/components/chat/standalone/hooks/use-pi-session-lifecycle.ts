@@ -167,7 +167,9 @@ export function usePiSessionLifecycle({
   const hasValidModel = activePreset?.provider === "acp"
     ? Boolean(activePreset.acpAgent?.id?.trim())
     : Boolean(activePreset?.model && activePreset.model.trim() !== "");
-  const needsLogin = activePreset?.provider === "MEMORA-cloud" && !userToken;
+  // Local-first, no cloud account: chat never requires signing in. Providers
+  // (local Ollama or a direct API key) are configured in Models & keys.
+  const needsLogin = false;
   const canChat = hasPresets && hasValidModel && !piStarting && !presetSwitching;
 
   const disabledReason = (() => {
