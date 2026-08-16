@@ -17,6 +17,18 @@ const nextConfig = {
     // triaging a minified-stack incident — set SHIP_SOURCE_MAPS=1 in CI for
     // that release, then flip back. Last triage: v2.4.255 for React #185.
     productionBrowserSourceMaps: process.env.SHIP_SOURCE_MAPS === '1',
+    webpack: (config) => {
+        // `unpdf` (PDF text extraction for chat attachments) reads
+        // `import.meta` in a way webpack's parser flags as a "Critical
+        // dependency" warning. It's harmless — the code runs fine — but it
+        // shows up as a build issue in the dev overlay. Silence just this
+        // known message so it doesn't mask real warnings.
+        config.ignoreWarnings = [
+            ...(config.ignoreWarnings ?? []),
+            { message: /Accessing import\.meta directly is unsupported/ },
+        ]
+        return config
+    },
 }
 export default nextConfig;
 

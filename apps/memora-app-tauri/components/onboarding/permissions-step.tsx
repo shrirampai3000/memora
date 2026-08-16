@@ -74,7 +74,7 @@ function PermissionRow({
     <button
       onClick={interactive ? onGrant : undefined}
       disabled={!interactive}
-      className={`w-full flex items-center gap-3 px-4 py-3 border origin-center transition-all duration-[250ms] ease-out group disabled:cursor-default ${
+      className={`w-full flex items-center gap-3 px-4 py-3 border origin-center transition-all [transition-duration:250ms] ease-out group disabled:cursor-default ${
         WHEEL_DIM[Math.min(distance, 2)]
       } ${
         interactive
