@@ -33,7 +33,7 @@ const QUICK_TEMPLATES = [
   { label: "Status Update", prompt: "Generate a brief status update of what I accomplished" },
   { label: "Key Decisions", prompt: "What key decisions did I make or encounter?" },
   { label: "Action Items", prompt: "Extract all action items and to-dos from my activity" },
-  { label: "Meeting Prep", prompt: "Summarize context I'll need for upcoming meetings" },
+  { label: "Time Breakdown", prompt: "Break down how much time I spent per app and website" },
   { label: "Blockers", prompt: "What problems, errors, or blockers did I encounter?" },
 ];
 
@@ -131,7 +131,7 @@ export function CustomSummaryBuilder({
   );
 
   const buildPrompt = () => {
-    const timeContext = `Analyze my screen and audio recordings from ${selectedTime}.`;
+    const timeContext = `Analyze my captured screen activity from ${selectedTime}.`;
     const userInstructions = instructions.trim()
       ? `\n\nUser instructions: ${instructions.trim()}`
       : "\n\nProvide a comprehensive summary with key activities, accomplishments, and notable moments.";

@@ -249,9 +249,10 @@ export function SummaryCards({
             {pipe.title}
           </button>
         ))}
-        {/* Quick summary chips */}
+        {/* Quick summary chips \u2014 screen-only starter questions, one click to ask */}
         {[
-          { label: "Meeting Prep", prompt: "Summarize context I'll need for upcoming meetings" },
+          { label: "Today's work", prompt: "What did I work on today?" },
+          { label: "Last hour", prompt: "Summarize what I did in the last hour." },
           { label: "Blockers", prompt: "What problems, errors, or blockers did I encounter?" },
         ].map((qt) => (
           <button
@@ -260,10 +261,10 @@ export function SummaryCards({
               posthog.capture("home_card_clicked", {
                 kind: "quick_summary_chip",
               });
-              const prompt = `Analyze my screen and audio recordings from today.\n\nUser instructions: ${qt.prompt}\n\nOnly report activities you can verify from the recordings. If uncertain, say so. Format with clear headings and bullet points.`;
+              const prompt = `Using my captured screen activity, answer the following.\n\nUser instructions: ${qt.prompt}\n\nOnly report things you can verify from the captured screens. If uncertain, say so. Format with clear headings and bullet points.`;
               onSendMessage(
                 prompt,
-                `\u2728 ${qt.label} \u2014 Today`,
+                `\u2728 ${qt.label}`,
                 "home_card",
                 "other_builtin",
               );
