@@ -167,18 +167,19 @@ export function SummaryCards({
   // Connection suggestions are shown as an inline nudge bar, not grid cards.
 
   return (
-    <div className="ph-no-capture relative flex flex-col items-center pt-6 pb-2 px-4">
-      {/* Header */}
-      <div className="relative mx-auto mb-2 w-fit">
-        <div className="absolute -inset-4 border border-dashed border-border/50" />
-        <div className="absolute -inset-2 border border-border/30" />
-        <PipeAIIconLarge size={40} thinking={false} className="relative text-foreground/80" />
+    <div className="ph-no-capture relative flex flex-col items-center pt-10 pb-4 px-4">
+      {/* Header — wordmark + AI glyph + welcoming greeting */}
+      <p className="mb-4 text-[11px] font-mono uppercase tracking-[0.22em] text-muted-foreground/60">
+        memora
+      </p>
+      <div className="mx-auto mb-3">
+        <PipeAIIconLarge size={44} thinking={false} className="text-foreground/85" />
       </div>
-      <h3 className="text-sm font-medium mb-0.5 text-foreground">
+      <h3 className="text-lg font-semibold mb-1 text-foreground tracking-tight">
         {userName ? `How can I help, ${userName}?` : "How can I help today?"}
       </h3>
-      <p className="text-xs text-muted-foreground mb-2">
-        From everything you&apos;ve seen
+      <p className="text-xs text-muted-foreground mb-5">
+        Ask anything about what you&apos;ve worked on, seen, or read.
       </p>
 
       {/* The onboarding goal or General Settings choice determines priority. */}
