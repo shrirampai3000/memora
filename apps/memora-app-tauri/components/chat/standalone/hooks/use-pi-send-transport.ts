@@ -74,9 +74,17 @@ export async function checkLivePiSession(
         indeterminate: true,
       };
     }
+    // Guard against a null payload (web-dev mock returns null for
+    // Tauri commands that aren't backed) so we don't throw on .running.
+    if (!result.data) {
+      return {
+        running: false,
+        error: "AI assistant info unavailable",
+        indeterminate: true,
+      };
+    }
     setPiInfo(result.data);
     if (!result.data.running) {
-      // Definitive: the backend says the process is not running.
       return { running: false, error: "The AI assistant is not running", indeterminate: false };
     }
     return { running: true, info: result.data };
@@ -363,7 +371,7 @@ export function usePiSendTransport(options: PiSendTransportOptions) {
                 settings.user?.token ?? null,
                 providerConfig,
               );
-              if (result.status === "ok" && result.data.running) {
+              if (result.status === "ok" && result.data && result.data.running) {
                 setPiInfo(result.data);
                 piSessionSyncedRef.current = false;
                 piCrashCountRef.current = 0;
@@ -731,7 +739,7 @@ export function usePiSendTransport(options: PiSendTransportOptions) {
             settings.user?.token ?? null,
             providerConfig,
           );
-          if (startRes.status === "ok" && startRes.data.running) {
+          if (startRes.status === "ok" && startRes.data && startRes.data.running) {
             setPiInfo(startRes.data);
             piSessionSyncedRef.current = false;
             if (providerConfig) {

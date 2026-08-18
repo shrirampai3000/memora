@@ -590,45 +590,24 @@ const PIPES_PRESET_ID = "pipes";
 // model routing without needing the user to know what to pick.
 const MEMORA_PRESET_ID = "memora";
 
-export function makeDefaultPresets(isPro: boolean): AIPreset[] {
-	if (isPro) {
-		return [
-			{
-				id: CHAT_PRESET_ID,
-				provider: "MEMORA-cloud",
-				url: "",
-				model: "auto",
-				maxContextChars: 200000,
-				defaultPreset: true,
-				prompt: "",
-			},
-			{
-				id: PIPES_PRESET_ID,
-				provider: "MEMORA-cloud",
-				url: "",
-				model: "auto",
-				maxContextChars: 200000,
-				defaultPreset: false,
-				prompt: "",
-			},
-		];
-	}
+export function makeDefaultPresets(_isPro: boolean): AIPreset[] {
+	// Memora is decoupled from the hosted cloud (no sign-in, no account).
+	// Default to a local Ollama preset so a fresh install can chat without
+	// any manual setup as soon as Ollama is running with a model pulled.
+	// If the user configures another provider (e.g. Claude API key) they
+	// can mark it default in Models & keys.
 	return [
 		{
 			id: MEMORA_PRESET_ID,
-			provider: "MEMORA-cloud",
-			url: "",
-			model: "auto",
-			maxContextChars: 200000,
+			provider: "native-ollama",
+			url: "http://localhost:11434/v1",
+			model: "llama3.2:1b",
+			maxContextChars: 32000,
 			defaultPreset: true,
 			prompt: "",
 		},
 	];
 }
-
-// Seed value — module load can't know pro status yet, so fall back to non-pro.
-// ensureDefaultPreset() re-seeds with pro status once settings.user is loaded.
-const DEFAULT_CLOUD_PRESET: AIPreset = makeDefaultPresets(false)[0];
 
 const DEFAULT_AUDIO_ENGINE = "whisper-large-v3-turbo-quantized";
 
@@ -1200,16 +1179,32 @@ function createSettingsStore() {
 			needsUpdate = true;
 		}
 
-		// Migration: Add MEMORA-cloud preset for existing users (without touching their existing presets)
-		const hasCloudPreset = settings.aiPresets?.some(
-			(p: any) => p.id === "MEMORA-cloud" || p.provider === "MEMORA-cloud"
-		);
-		if (settings.aiPresets && settings.aiPresets.length > 0 && !hasCloudPreset) {
-			// Only set as default if no other preset is already default
-			const hasDefault = settings.aiPresets.some((p: any) => p.defaultPreset);
-			const cloudPreset = { ...DEFAULT_CLOUD_PRESET, defaultPreset: !hasDefault };
-			settings.aiPresets = [cloudPreset as any, ...settings.aiPresets];
-			needsUpdate = true;
+		// Memora is decoupled from the hosted cloud. Any MEMORA-cloud preset
+		// (from legacy state or seeded before this change) is converted in
+		// place to the local Ollama preset so chat routes to the local model
+		// instead of throwing "failed to start AI assistant (MEMORA-cloud)".
+		if (Array.isArray(settings.aiPresets)) {
+			const localSeed = makeDefaultPresets(false)[0] as any;
+			let converted = false;
+			const next = settings.aiPresets.map((p: any) => {
+				if (p.provider === "MEMORA-cloud" || p.id === "MEMORA-cloud") {
+					converted = true;
+					return {
+						...localSeed,
+						id: p.id || localSeed.id,
+						defaultPreset: p.defaultPreset ?? localSeed.defaultPreset,
+					};
+				}
+				return p;
+			});
+			if (converted) {
+				settings.aiPresets = next as any;
+				needsUpdate = true;
+			}
+			if (!settings.aiPresets || settings.aiPresets.length === 0) {
+				settings.aiPresets = makeDefaultPresets(false) as any;
+				needsUpdate = true;
+			}
 		}
 
 		// Migration: Add chat history for existing users
