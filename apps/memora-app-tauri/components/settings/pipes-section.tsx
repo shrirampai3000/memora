@@ -2637,6 +2637,47 @@ export function PipesSection() {
                     scheduled tasks are AI agents that run over your screen data — they summarize your day, track your time, sync your notes, and more.
                   </p>
                 </div>
+
+                {/* Static example cards — presentational only, illustrate what a
+                    real scheduled task looks like so the empty state has visible
+                    content to demo. Clicking "create" jumps to the same builder
+                    the "+" chip below opens. */}
+                <div className="grid gap-2 max-w-2xl mx-auto sm:grid-cols-3 text-left">
+                  {[
+                    {
+                      label: "Daily Recap",
+                      schedule: "every day at 6pm",
+                      desc: "Summarize what you worked on today — key moments, decisions, and anything unfinished.",
+                    },
+                    {
+                      label: "Time Breakdown",
+                      schedule: "every hour",
+                      desc: "Track how much time you spend in each app and website across the day.",
+                    },
+                    {
+                      label: "Weekly Review",
+                      schedule: "friday at 5pm",
+                      desc: "Roll up the week: what shipped, recurring topics, and open threads to follow up on.",
+                    },
+                  ].map((ex) => (
+                    <div
+                      key={ex.label}
+                      className="border border-border bg-muted/20 p-3 flex flex-col gap-1.5"
+                    >
+                      <p className="text-sm font-medium text-foreground">{ex.label}</p>
+                      <p className="text-[10px] uppercase tracking-wide text-muted-foreground/70 font-mono">
+                        {ex.schedule}
+                      </p>
+                      <p className="text-xs text-muted-foreground leading-snug">
+                        {ex.desc}
+                      </p>
+                      <span className="mt-1 text-[10px] uppercase tracking-wide text-muted-foreground/50 font-mono">
+                        example
+                      </span>
+                    </div>
+                  ))}
+                </div>
+
                 <div className="space-y-2 max-w-md mx-auto text-left">
                   <p className="text-xs text-muted-foreground">
                     create one in seconds — pick an example to build it, or describe your own below.
