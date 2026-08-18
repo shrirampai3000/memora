@@ -657,7 +657,6 @@ function HomeContent() {
     if (isSectionHidden(activeSection) && activeSection !== "help") {
       return (
         <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
-          <img src="/128x128.png" alt="memora" className="w-16 h-16 opacity-30 mb-4" />
           <p className="text-sm font-mono">memora</p>
         </div>
       );

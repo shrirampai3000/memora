@@ -357,17 +357,17 @@ function buildCreatePipeDisplayLabel(prompt: string): string {
 // Each `prompt` is sent straight into the create flow (autoSend).
 const PIPE_EXAMPLES: { label: string; prompt: string }[] = [
   {
-    label: "ðŸ“‹ daily recap",
+    label: "daily recap",
     prompt:
       "every day at 6pm, summarize what i worked on today and send me a notification",
   },
   {
-    label: "ðŸ§  track people i meet",
+    label: "track people i meet",
     prompt:
       "keep a running note of the people i talk to and what we discussed, updated every hour",
   },
   {
-    label: "â± where my time goes",
+    label: "where my time goes",
     prompt:
       "every evening, break down how i spent my time across apps and projects today",
   },
@@ -1886,7 +1886,7 @@ export function PipesSection() {
               for (const u of updated) {
                 toast({
                   title: `${u.pipe_name} auto-updated`,
-                  description: `v${u.from_version} â†’ v${u.to_version}`,
+                  description: `v${u.from_version} → v${u.to_version}`,
                 });
               }
               // Refresh updates map and pipes list
@@ -2702,7 +2702,7 @@ export function PipesSection() {
                   }}
                   className="inline-flex items-center gap-2 px-4 py-2 border border-border text-sm font-medium hover:bg-muted transition-colors"
                 >
-                  or browse the Store â†’
+                  or browse the Store →
                 </button>
               </div>
             )}
@@ -3040,7 +3040,7 @@ export function PipesSection() {
                           ) : (
                             <ArrowUpCircle className="h-3 w-3 mr-1" />
                           )}
-                          v{availableUpdates[pipe.config.name].installed_version} â†’ v{availableUpdates[pipe.config.name].latest_version}
+                          v{availableUpdates[pipe.config.name].installed_version} → v{availableUpdates[pipe.config.name].latest_version}
                         </Badge>
                       )}
 
@@ -3629,7 +3629,7 @@ export function PipesSection() {
                               <div key={i} className="border p-2 space-y-1" style={{ contain: "layout paint" }}>
                                 <div className="flex items-center gap-2 text-xs font-mono">
                                   <span className="text-muted-foreground">{new Date(log.started_at).toLocaleString()}</span>
-                                  <span>{log.success ? "âœ“" : "âœ—"}</span>
+                                  <span>{log.success ? "✓" : "✗"}</span>
                                   <span className="text-muted-foreground">{Math.round((new Date(log.finished_at).getTime() - new Date(log.started_at).getTime()) / 1000)}s</span>
                                 </div>
                                 {log.success && log.stdout && cleanPipeStdout(log.stdout) && (
@@ -3999,7 +3999,7 @@ export function PipesSection() {
                                     {new Date(log.started_at).toLocaleString()}
                                   </span>
                                   <span>
-                                    {log.success ? "âœ“" : "âœ—"}
+                                    {log.success ? "✓" : "✗"}
                                   </span>
                                   <span className="text-muted-foreground">
                                     {Math.round(
@@ -4250,7 +4250,7 @@ export function PipesSection() {
             <DialogDescription>
               <span className="inline-flex items-center gap-2 mt-2">
                 <Badge variant="outline">v{updateDialog?.installedVersion}</Badge>
-                <span>â†’</span>
+                <span>→</span>
                 <Badge variant="outline">v{updateDialog?.latestVersion}</Badge>
               </span>
             </DialogDescription>

@@ -529,8 +529,6 @@ export default function EngineStartup({ handleNextSlide }: EngineStartupProps) {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
       >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img className="w-12 h-12 mb-2" src="/128x128.png" alt="memora" />
         <h1 className="font-mono text-base font-bold text-foreground">
           memora
         </h1>

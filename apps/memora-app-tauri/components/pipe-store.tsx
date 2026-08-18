@@ -1197,13 +1197,7 @@ function PublisherIdentity({
         className,
       )}
     >
-      {publisher.isMemoraTeam ? (
-        <span
-          aria-hidden="true"
-          className={cn(avatarClass, "flex-shrink-0 bg-cover bg-center")}
-          style={{ backgroundImage: "url('/128x128.png')" }}
-        />
-      ) : (
+      {(
         <span
           aria-hidden="true"
           className={cn(
@@ -1212,7 +1206,7 @@ function PublisherIdentity({
             compact ? "text-[8px]" : "text-[9px]",
           )}
         >
-          {publisher.name.charAt(0)}
+          {(publisher.isMemoraTeam ? "M" : publisher.name.charAt(0))}
         </span>
       )}
       <span
